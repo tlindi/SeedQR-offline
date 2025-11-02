@@ -1,0 +1,13 @@
+# 12-word seed:
+forum undo fragile fade shy sign arrest garment culture tube off merit
+
+# Standard SeedQR digit stream:
+073318950739065415961602009907670428187212261116
+
+# CompactSeedQR bitstream:
+01011011101111011001110101110001101010001110110001111001100100001000001100011010111111110011010110011101010000100110010101000101
+
+# CompactSeedQR bytestream:
+b'[\x bd \x 9d q\x a8 \x ec y\x 90 \x 83 \x 1a \x ff 5\x 9d BeE'
+
+https://github.com/SeedSigner/seedsigner/tree/dev/docs/seed_qr#test-vector-1-24-word-seed
