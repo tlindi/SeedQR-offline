@@ -1,15 +1,16 @@
-# [SeedQR-offline](https://raw.githubusercontent.com/tlindi/SeedQR-offline/refs/heads/v0.1/SeedQR.html) Electrum (and BIP39)
+# SeedQR-offline Electrum (and BIP39)
 
 Offline generate and decode SeedQR style 12-word phrases of Electrum and BIP39 onto 21x21 compact QR 
 
-## todo for v0.1
+## todo for v0.x
 
-- [X] Validate QR (all BIP39 and Electrums)
-- upload fails to detect seed type
-- [ ] Electrum 2FA not detected
+- [ ] ...
 
 ## Done
 - [x] paste whole seed splitted to boxes
+- [x] validate QR (all BIP39 and Electrums)
+- [x] upload detects seed type
+- [x] Electrum 2FA detected
 
 ### 3D SeedQR
 
