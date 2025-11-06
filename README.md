@@ -1,4 +1,4 @@
-# SeedQR-offline Electrum (and BIP39)
+# [SeedQR-offline](https://raw.githubusercontent.com/tlindi/SeedQR-offline/refs/heads/v0.1/SeedQR.html) Electrum (and BIP39)
 
 Offline generate and decode SeedQR style 12-word phrases of Electrum and BIP39 onto 21x21 compact QR 
 
