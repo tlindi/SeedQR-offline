@@ -5,7 +5,7 @@ function renderQR(payloadBytes) {
   var qr = qrcodegen.QrCode.encodeSegments([seg], qrcodegen.QrCode.Ecc.LOW);
 
   var size = qr.size;   // use property, not getSize()
-  var scale = 8;
+  var scale = 12;
 
   var canvas = document.createElement('canvas');
   canvas.width = size * scale;
