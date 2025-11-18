@@ -4,7 +4,7 @@ Offline generate and decode SeedQR style 12-word phrases of Electrum and BIP39 o
 
 ## todo for v0.x
 
-- [ ] ...
+- [ ] fix JPG encoding
 
 ## Done
 - [x] paste whole seed splitted to boxes
