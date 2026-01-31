@@ -4,13 +4,14 @@ Offline generate and decode SeedQR style 12-word phrases of Electrum and BIP39 o
 
 ## todo for v0.x
 
-- [ ] fix JPG encoding
+- noting
 
 ## Done
 - [x] paste whole seed splitted to boxes
 - [x] validate QR (all BIP39 and Electrums)
 - [x] upload detects seed type
 - [x] Electrum 2FA detected
+- [X] fix JPG encoding - increased QR size cause jgp smeared too small QRs
 
 ### 3D SeedQR
 
