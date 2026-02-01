@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Compact SeedQR offline - v0.1</title>
+<title>Compact SeedQR offline</title>
 
 <!-- New camera + layout stylesheet -->
 <link rel="stylesheet" href="css/styles.css">
@@ -18,7 +18,7 @@
 
   <h2>Compact SeedQR-offline for BIP39 and electrum 12 word seeds</h2>
   <p>
-    by tlindi 20260131
+    v0.2 by tlindi (C)20260201.2225
   </p>
   <h1>Debug, add to URL: ?debug=bip39, =electrum or =electrum_2fa </h1>
   <p>
@@ -115,19 +115,21 @@
 <script src="libs/qrcodegen-v1.8.0-es5.js"></script>
 <script src="libs/zxing-v0.19.1/index.min.js"></script>
 <!-- tlindi -->
-<script src="debug.js"></script>
+<script src="js/debug.js"></script>
+<script src="js/reader.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/scanner.js"></script>
 <script src="WORDLIST.js"></script>
 <script src="render.js"></script>
 <script src="common.js"></script>
 <script src="input.js"></script>
-<script src="helpers.js"></script>
+<script src="js/helpers.js"></script>
 <script src="seedqr.js"></script>
 <script src="bip39.js"></script>
 <script src="electrum.js"></script>
+<script src="js/decoder.js"></script>
 <script src="status.js"></script>
-<script src="upload.js"></script>
 <script src="qrread.js"></script>
-<script src="js/scanner.js"></script>
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {

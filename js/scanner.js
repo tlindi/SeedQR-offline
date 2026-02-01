@@ -18,12 +18,16 @@ let zxingReader = null;
 try { zxingReader = new ZXing.BrowserQRCodeReader(); } catch (e) { zxingReader = null; }
 
 // -------------------------------
-//  CAMERA START / STOP (ZXing)
+//  CAMERA START / STOP
 // -------------------------------
 
 async function startCamera() {
   // Prevent double-start
   if (cameraStream) { console.log('startCamera: camera already running'); return; }
+
+  // ensure one-shot latch is cleared at start of a fresh session
+  if (typeof window._scanLocked === 'undefined') window._scanLocked = false;
+  window._scanLocked = false;
   
   try {
     // request camera stream so we can access track for torch capability
@@ -34,8 +38,8 @@ async function startCamera() {
     videoEl.srcObject = cameraStream;
 
     try {
-      if (videoEl.paused) await videoEl.play(); 
-      } catch (e) {
+      if (videoEl.paused) await videoEl.play();
+    } catch (e) {
       console.warn('video play failed', e);
     }
 
@@ -68,50 +72,52 @@ async function startCamera() {
         if (err) return;
         if (!result) return;
 
-        // ONLY use rawBytes. Do not attempt to interpret or encode text.
-        const raw = (result.rawBytes instanceof Uint8Array) ? result.rawBytes : new Uint8Array();
-
-        // Extract 16-byte Compact SeedQR payload
-        let payload = raw;
-        if (raw && raw.length > 16) {
-          if (raw.length >= 19) {
-            payload = raw.slice(3, 3 + 16);
+        // Obtain canonical payload from centralized reader
+        // inside ZXing callback
+        let payload = null;
+        try {
+          if (typeof window.getPayload === 'function') {
+            const p = window.getPayload ? window.getPayload({ result, qr: result }) : null;
+            if (p && typeof p.then === 'function') { console.error('scanner: getPayload returned a Promise; reader must be synchronous'); return; }
+            payload = p;
           } else {
-            payload = raw.slice(0, 16);
+            payload = (result.rawBytes instanceof Uint8Array) ? new Uint8Array(result.rawBytes) : null;
           }
+        } catch (e) {
+          console.error('scanner: getPayload threw', e);
+          payload = null;
         }
 
-        // Short hex preview helper
-        const toHex = (u8) => Array.from(u8 || []).map(b => b.toString(16).padStart(2,'0')).join('');
-        const payloadHex = toHex(payload).slice(0, 64);
 
-        // Debounce identical detections (avoid repeated calls for same payload)
-        if (!window._lastDetectedHex) window._lastDetectedHex = null;
-        if (!window._lastDetectedTime) window._lastDetectedTime = 0;
-        const now = Date.now();
-        if (window._lastDetectedHex === payloadHex && (now - window._lastDetectedTime) < 800) return;
-        window._lastDetectedHex = payloadHex;
-        window._lastDetectedTime = now;
-
-        console.log('ZXing detected QR', { rawLength: raw.length, payloadLength: payload.length, payloadHexPreview: payloadHex });
-
-        // Deliver bytes-only payload to the app pipeline (async handler)
-        if (typeof window.handleDecodedBytes === 'function') {
-          try {
-            const p = window.handleDecodedBytes(payload);
-            if (p && typeof p.catch === 'function') p.catch(e => console.error('handleDecodedBytes rejected', e));
-          } catch (e) {
-            console.error('handleDecodedBytes sync error', e);
-          }
-        } else {
-          // fallback: store globally and call updateResults if present
-          window.lastUpload = { type: 'camera', bytes: payload };
-          if (typeof updateResults === 'function') {
-            try { updateResults(); } catch (e) { console.error('updateResults error', e); }
-          } else {
-            console.log('Decoded QR (camera bytes) fallback stored', { payloadLength: payload.length });
-          }
+        if (!payload) {
+          console.error('No payload produced from result');
+          return;
         }
+
+        // one-shot: accept first payload and ignore further scans until cleared
+        if (window._scanLocked) return;
+        window._scanLocked = true;
+
+        console.log('ZXing detected QR', { payloadLength: payload.length });
+
+      // inside ZXing callback after payload extraction and locking
+    if (typeof window.handleDecodedBytes === 'function') {
+      try {
+        const p = window.handleDecodedBytes(payload);
+        if (p && typeof p.catch === 'function') p.catch(e => console.error('handleDecodedBytes rejected', e));
+      } catch (e) {
+        console.error('handleDecodedBytes sync error', e);
+    }
+    } else {
+      // legacy fallback (temporary): store raw bytes and update UI
+      window.lastUpload = { type: 'camera', bytes: payload };
+      if (typeof updateResults === 'function') {
+        try { updateResults(); } catch (e) { console.error('updateResults error', e); }
+      } else {
+        console.log('Decoded QR (camera bytes) fallback stored', { payloadLength: payload.length });
+    }
+  }
+
       });
     } else {
       console.warn('ZXing reader not available; camera will start but no continuous decode will run.');
@@ -137,6 +143,8 @@ function stopCamera() {
   if (videoEl && videoEl.srcObject) {
     try { videoEl.srcObject = null; } catch (e) {}
   }
+  // clear the one-shot lock so future camera starts can scan
+  window._scanLocked = false;
 }
 
 // -------------------------------
@@ -176,6 +184,9 @@ if (torchBtn) {
 // -------------------------------
 
 async function initCameraOnLoad() {
+  // ensure latch cleared for a fresh session
+  if (typeof window._scanLocked === 'undefined') window._scanLocked = false;
+  window._scanLocked = false;
   showCamera();
   await startCamera();
   // ZXing handles continuous scanning; no scanFrame call required
@@ -183,95 +194,11 @@ async function initCameraOnLoad() {
 
 async function resetCameraOnClear() {
   stopCamera();
+  // ensure latch cleared before restarting
+  window._scanLocked = false;
   showCamera();
   await startCamera();
 }
-
-// -------------------------------
-//  Adapter: async-only handleDecodedBytes
-// -------------------------------
-
-/*
-  Async-only adapter: this version assumes decodeSeedQRPayload is async (returns a Promise).
-  It awaits decodeSeedQRPayload(payload) and then updates window.lastUpload and calls updateResults().
-  Electrum decoding (decodeElectrumSeed) is attempted synchronously first if present.
-*/
-window.handleDecodedBytes = window.handleDecodedBytes || (async function(u8) {
-  console.log('handleDecodedBytes start', { bytesLength: u8 && u8.length, time: Date.now() });
-  try {
-    // attempt electrum first if function exists (synchronous)
-    if (typeof decodeElectrumSeed === 'function') {
-      try {
-        const ew = decodeElectrumSeed(u8);
-        if (Array.isArray(ew)) {
-          window.lastUpload = { type: "electrum", words: ew, bytes: u8 };
-          const words = (window.lastUpload && window.lastUpload.words) || [];
-          Array.from(document.querySelectorAll('#words input')).forEach((el,i)=> el.value = words[i] || '');
-          if (typeof updateResults === 'function') return updateResults();
-        }
-      } catch (e) {
-        // not electrum, continue
-      }
-    }
-
-    // decodeSeedQRPayload is expected to be async; try raw payload first,
-    // then a short list of deterministic transforms if needed.
-    let decoded = null;
-    let payload = u8;
-
-    if (typeof decodeSeedQRPayload === 'function') {
-      try {
-        // try the raw payload first
-        decoded = await decodeSeedQRPayload(payload);
-        } catch (e) {
-          console.error('decodeSeedQRPayload initial error', e);
-          }
-          // helper transforms
-          const rev = u => Uint8Array.from(u).reverse();
-          const swapPairs = u => { const r = new Uint8Array(u); for (let i = 0; i + 1 < r.length; i += 2) { const t = r[i]; r[i] = r[i+1]; r[i+1] = t; } return r; };
-          const swapNibbles = u => Uint8Array.from(u, v => (((v & 0x0f) << 4) | ((v & 0xf0) >> 4)) & 0xff);
-          const rot = (u, n) => { const r = new Uint8Array(u.length); for (let i = 0; i < u.length; i++) r[i] = (((u[i] << n) | (u[i] >> (8 - n))) & 0xff); return r; };
-
-          const valid = d => d && Array.isArray(d.words) && d.words.length === 12;
-
-          if (!valid(decoded)) {
-            const candidates = [rev, swapPairs, swapNibbles];
-            for (let n = 1; n < 8; n++) candidates.push(u => rot(u, n));
-            
-            for (const fn of candidates) {
-              try {
-                const test = fn(payload);
-                const d = await decodeSeedQRPayload(test);
-                if (valid(d)) { decoded = d; payload = test; break; }
-              } catch (e) {
-                // ignore and continue trying other transforms
-              }
-            }
-          }
-        }
-
-        // If decoded now contains valid words, set lastUpload and update UI below.
-        if (decoded && Array.isArray(decoded.words)) {
-          window.lastUpload = { type: "seedqr", words: decoded.words, bytes: payload };
-          console.log('decoded payload hex', Array.from(payload || []).map(b => b.toString(16).padStart(2,'0')).join(''));
-          console.log('decodeSeedQRPayload succeeded', { wordsCount: decoded.words.length });
-          console.log('decoded payload', { hex: Array.from(payload || []).map(b => b.toString(16).padStart(2,'0')).join(''), dec: Array.from(payload || []).join(',') });
-          console.log('decoded words', Array.isArray(decoded.words) ? decoded.words.join(' ') : String(decoded.words));
-         
-          if (typeof updateResults === 'function') return updateResults();
-        }
-
-    // fallback: store bytes and call updateResults if present
-    console.log('handleDecodedBytes falling back to raw bytes storage');
-    window.lastUpload = { type: "camera", bytes: u8 };
-    const words = (window.lastUpload && window.lastUpload.words) || [];
-    Array.from(document.querySelectorAll('#words input')).forEach((el,i)=> el.value = words[i] || '');
-    if (typeof updateResults === 'function') updateResults();
-
-  } catch (e) {
-    console.error('handleDecodedBytes top-level error', e);
-  }
-});
 
 // Expose public API on window for non-module pages
 window.startCamera = startCamera;
