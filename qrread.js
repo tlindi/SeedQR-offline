@@ -32,6 +32,11 @@ async function handleQRFileUpload(file) {
 
         msgBox.textContent = "QR decoded successfully — seed words loaded.";
         msgBox.style.color = "#176b1a"; // green
+        
+        // --- CAMERA: stop camera and show QR view --- 
+        if (window.stopCamera) window.stopCamera();
+        if (window.showQRCode) window.showQRCode();
+        
     } catch (err) {
         msgBox.textContent = "QR decode failed: " + err.message;
         msgBox.style.color = "#b00020"; // red
