@@ -90,6 +90,8 @@ function renderWalletType(seedType, result, versionEl) {
 }
 
 async function updateResults() {
+  console.log('updateResults start', { lastUpload: window.lastUpload });
+
   const status    = document.getElementById('status');
   const bytesPre  = document.getElementById('bytes');
   const pbytesPre = document.getElementById('pbytes');
