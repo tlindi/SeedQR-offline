@@ -81,6 +81,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   location.reload();
 });
 
+
 async function decodeSeedWordsFromFile(file) {
   const { text, bytes } = await decodeQRFromFile(file);
 
