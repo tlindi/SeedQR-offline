@@ -22,6 +22,9 @@ try { zxingReader = new ZXing.BrowserQRCodeReader(); } catch (e) { zxingReader =
 // -------------------------------
 
 async function startCamera() {
+  // Prevent double-start
+  if (cameraStream) { console.log('startCamera: camera already running'); return; }
+  
   try {
     // request camera stream so we can access track for torch capability
     cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -30,7 +33,11 @@ async function startCamera() {
 
     videoEl.srcObject = cameraStream;
 
-    try { await videoEl.play(); } catch (e) {}
+    try {
+      if (videoEl.paused) await videoEl.play(); 
+      } catch (e) {
+      console.warn('video play failed', e);
+    }
 
     cameraTrack = cameraStream.getVideoTracks()[0];
 
@@ -57,17 +64,14 @@ async function startCamera() {
     if (zxingReader) {
       try { zxingReader.reset(); } catch (e) {}
       zxingReader.decodeFromVideoDevice(null, videoEl, (result, err) => {
+        // Ignore ZXing NotFound/trace errors (they happen every frame)
+        if (err) return;
         if (!result) return;
 
         // ONLY use rawBytes. Do not attempt to interpret or encode text.
         const raw = (result.rawBytes instanceof Uint8Array) ? result.rawBytes : new Uint8Array();
 
-        // USER-SPECIFIED BEHAVIOR:
-        // The valid Compact SeedQR payload is the 16-byte slice starting at offset 3
-        // when ZXing returns a 19-byte buffer. For other lengths:
-        //  - if exactly 16 bytes: use as-is
-        //  - if >16 and <19: take the first 16 bytes (fallback)
-        //  - if >=19: take bytes [3..18] (16 bytes)
+        // Extract 16-byte Compact SeedQR payload
         let payload = raw;
         if (raw && raw.length > 16) {
           if (raw.length >= 19) {
@@ -77,16 +81,35 @@ async function startCamera() {
           }
         }
 
+        // Short hex preview helper
+        const toHex = (u8) => Array.from(u8 || []).map(b => b.toString(16).padStart(2,'0')).join('');
+        const payloadHex = toHex(payload).slice(0, 64);
+
+        // Debounce identical detections (avoid repeated calls for same payload)
+        if (!window._lastDetectedHex) window._lastDetectedHex = null;
+        if (!window._lastDetectedTime) window._lastDetectedTime = 0;
+        const now = Date.now();
+        if (window._lastDetectedHex === payloadHex && (now - window._lastDetectedTime) < 800) return;
+        window._lastDetectedHex = payloadHex;
+        window._lastDetectedTime = now;
+
+        console.log('ZXing detected QR', { rawLength: raw.length, payloadLength: payload.length, payloadHexPreview: payloadHex });
+
         // Deliver bytes-only payload to the app pipeline (async handler)
         if (typeof window.handleDecodedBytes === 'function') {
-          try { window.handleDecodedBytes(payload); } catch (e) { console.error('handleDecodedBytes error', e); }
+          try {
+            const p = window.handleDecodedBytes(payload);
+            if (p && typeof p.catch === 'function') p.catch(e => console.error('handleDecodedBytes rejected', e));
+          } catch (e) {
+            console.error('handleDecodedBytes sync error', e);
+          }
         } else {
           // fallback: store globally and call updateResults if present
           window.lastUpload = { type: 'camera', bytes: payload };
           if (typeof updateResults === 'function') {
             try { updateResults(); } catch (e) { console.error('updateResults error', e); }
           } else {
-            console.log('Decoded QR (camera bytes):', payload);
+            console.log('Decoded QR (camera bytes) fallback stored', { payloadLength: payload.length });
           }
         }
       });
@@ -174,6 +197,7 @@ async function resetCameraOnClear() {
   Electrum decoding (decodeElectrumSeed) is attempted synchronously first if present.
 */
 window.handleDecodedBytes = window.handleDecodedBytes || (async function(u8) {
+  console.log('handleDecodedBytes start', { bytesLength: u8 && u8.length, time: Date.now() });
   try {
     // attempt electrum first if function exists (synchronous)
     if (typeof decodeElectrumSeed === 'function') {
@@ -194,9 +218,11 @@ window.handleDecodedBytes = window.handleDecodedBytes || (async function(u8) {
         const decoded = await decodeSeedQRPayload(u8);
         if (decoded && Array.isArray(decoded.words)) {
           window.lastUpload = { type: "seedqr", words: decoded.words, bytes: u8 };
+          console.log('decodeSeedQRPayload succeeded', { wordsCount: decoded.words.length });
           if (typeof updateResults === 'function') return updateResults();
         } else {
           // decoder returned no words; fall through to fallback storage
+          console.warn('decodeSeedQRPayload returned no words', decoded);
         }
       } catch (e) {
         console.error('decodeSeedQRPayload rejected or threw', e);
@@ -205,6 +231,7 @@ window.handleDecodedBytes = window.handleDecodedBytes || (async function(u8) {
     }
 
     // fallback: store bytes and call updateResults if present
+    console.log('handleDecodedBytes falling back to raw bytes storage');
     window.lastUpload = { type: "camera", bytes: u8 };
     if (typeof updateResults === 'function') updateResults();
 
