@@ -1,14 +1,13 @@
 /* === Camera View Styling (moved from scanner.html) === */
 
 #cameraWrapper {
-  width: 100%;
-  max-width: 480px;
-  aspect-ratio: 1 / 1;
-  position: relative;
+  width: 260px;      /* matches QR canvas size */
+  height: 260px;     /* keeps it square */
+  margin: 20px auto;
   overflow: hidden;
   background: #000;
   margin: 20px auto; /* centers it like the QR code */
-  display: none;     /* hidden by default, shown when scanning */
+  display: block;
 }
 
 #cameraWrapper video {

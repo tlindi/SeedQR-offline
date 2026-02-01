@@ -207,8 +207,11 @@ window.addEventListener('DOMContentLoaded', () => {
     banner.style.display = "block";
   } else {
     banner.style.display = "none"; // hide in production
-    if (payloadCard) payloadCard.style.display = 'none';
+    // DO NOT hide payloadCard anymore
+    // if (payloadCard) payloadCard.style.display = 'none';
   }
+
+  document.getElementById('results').style.display = 'block';
 
   // Build the inputs
   makeInputs();
