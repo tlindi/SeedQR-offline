@@ -12,21 +12,21 @@
 
   .cards { 
     display: flex;
-	gap: 20px;
+  gap: 20px;
     margin-top:16px;
-	flex-wrap:
-	wrap;
+  flex-wrap:
+  wrap;
   }
 
-	.card {
-	  border: 1px solid #ccc;
-	  border-radius: 8px;
-	  padding: 16px;
-	  background: #fafafa;
-	  box-sizing: border-box;
-	  width: 100%;              /* ensure card defines the frame */
-	  max-width: 900px;         /* optional, keeps it neat */
-	}
+  .card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    background: #fafafa;
+    box-sizing: border-box;
+    width: 100%;              /* ensure card defines the frame */
+    max-width: 900px;         /* optional, keeps it neat */
+  }
 
   .words {
     display: grid;
@@ -51,10 +51,10 @@
 
   .words input[type="text"] {
     width: 100%;
-	max-width: 100%;
-	padding: 8px;
-	box-sizing: border-box;   /* padding included in width */
-	font-family: ui-monospace, monospace;
+  max-width: 100%;
+  padding: 8px;
+  box-sizing: border-box;   /* padding included in width */
+  font-family: ui-monospace, monospace;
   }
 
   button { padding: 8px 12px; font-weight: 600; }
@@ -81,20 +81,20 @@
   <h1>Debug, add to URL: ?debug=bip39, =electrum or =electrum_2fa </h1>
   <p>
     Write your 12 seed words or paste all 12 words at once, they’ll be split automatically.</br>
-	(consider copy-paste non-secure)</br>
+  (consider copy-paste non-secure)</br>
     When words are valid, a QR is generated automatically. Verify detected wallet type!</br>
   </p>
 
 <div class="cards">
   <!-- Seed words card -->
-	<div class="card">
-	  <label>Seed words (12):</label>
-	  <div class="words" id="words"></div>
-	  <div style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
-		<button id="make" style="display:none;">GetQR</button>
-		<button id="clear">Clear</button>
-	  </div>
-	</div>
+  <div class="card">
+    <label>Seed words (12):</label>
+    <div class="words" id="words"></div>
+    <div style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
+    <button id="make" style="display:none;">GetQR</button>
+    <button id="clear">Clear</button>
+    </div>
+  </div>
 
     <!-- Upload card -->
     <div class="card" style="text-align:center;">
@@ -119,40 +119,48 @@
   <!-- <div id="results" style="margin-top:16px; text-align:center; display:flex; gap:20px; flex-wrap:wrap;"> -->
   <div class="card" id="results" style="display:none;">
     <!-- QR and Seedstring Card -->
-	  <div class="card">
-		  <div style="margin-top:2px; display:flex; gap:2px; align-items:center; justify-content:center;">
-			<label>Wallet type:</label>
-			<pre id="version"></pre>
-		  </div>
-		  <div style="margin-top:2px; display:flex; gap:5px; align-items:center; justify-content:center;">
-			<label>Compact SeedQR (qrcode v1-LOW):</label>
-		  </div>
-		  <div id="qrcode" style="margin-top:20px; display:flex; gap:15px; align-items:center; justify-content:center;"></div>
-		  <div style="margin-top:10px; text-align:center;">
-		    <label>Seed words (string):</label>
-     	  <pre id="wordString" style="white-space:pre-wrap;"></pre>
-	    </div>
-		<div style="margin-top:20px; display:flex; gap:5px; align-items:center; justify-content:center;">
-		  <small>Print and manually transcribe on a 21×21 template.</small>
-        </div>
-	  </div>
+    <div class="card">
+      <div style="margin-top:2px; display:flex; gap:2px; align-items:center; justify-content:center;">
+      <label>Wallet type:</label>
+      <pre id="version"></pre>
+      </div>
+      <div style="margin-top:2px; display:flex; gap:5px; align-items:center; justify-content:center;">
+      <label>Compact SeedQR (qrcode v1-LOW):</label>
+      </div>
+
+      <!-- Camera view + QR view share this area -->
+      <div id="cameraWrapper">
+        <video id="video" playsinline></video>
+        <button id="torchBtn" disabled>Toggle Torch</button>
+      </div>
+
+      <div id="qrcode" style="margin-top:20px; display:flex; gap:15px; align-items:center; justify-content:center;"></div>
+
+      <div style="margin-top:10px; text-align:center;">
+        <label>Seed words (string):</label>
+        <pre id="wordString" style="white-space:pre-wrap;"></pre>
+      </div>
+      <div style="margin-top:20px; display:flex; gap:5px; align-items:center; justify-content:center;">
+        <small>Print and manually transcribe on a 21×21 template.</small>
+      </div>
+    </div>
 
       <!-- Status Card -->
-        <div class="card" id="statusCard" style="display:none;">
-	    <span id="status"></span>
+      <div class="card" id="statusCard" style="display:none;">
+         <span id="status"></span>
       </div>
 
       <!-- Payload Card -->
-	  <div class="card" id="payloadCard">
+    <div class="card" id="payloadCard">
         <label>Decimal word indices:</label>
         <pre id="wordIndices"></pre>
-		<label>Payload (Python bytes, SeedQR, hex and 132 bits):</label>
-		<pre id="pbytes"></pre>
-		<pre id="hex"></pre>
-		<pre id="bytes"></pre>
-		<pre id="bits"></pre>
+    <label>Payload (Python bytes, SeedQR, hex and 132 bits):</label>
+    <pre id="pbytes"></pre>
+    <pre id="hex"></pre>
+    <pre id="bytes"></pre>
+    <pre id="bits"></pre>
       </div>
-   </div>	  
+   </div>    
 </div>
 
 <!-- external -->
