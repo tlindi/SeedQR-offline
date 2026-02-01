@@ -9,8 +9,10 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
     const img = new Image();
     img.onload = async function () {
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+//      canvas.width = img.width;
+//      canvas.height = img.height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
 
