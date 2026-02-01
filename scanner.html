@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ZXing camera scanner (local, offline)</title>
+  <style>
+    body { font-family: sans-serif; margin: 1rem; background: #111; color: #eee; }
+    #video { width: 100%; max-width: 480px; background: #000; }
+    #controls { margin-top: 0.5rem; }
+    #result { margin-top: 1rem; white-space: pre-wrap; font-family: monospace; }
+    button { padding: 0.4rem 0.8rem; margin-right: 0.5rem; }
+    .label { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>ZXing camera scanner (local)</h1>
+
+  <!-- Video preview -->
+  <video id="video" playsinline></video>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button id="torchBtn" disabled>Toggle Torch</button>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <!-- Result -->
+  <div id="result">
+    <div><span class="label">Status:</span> <span id="status">Initializing…</span></div>
+    <div><span class="label">Decoder:</span> ZXing</div>
+    <div><span class="label">Text:</span> <span id="text"></span></div>
+    <div><span class="label">Bytes (len):</span> <span id="bytesLen">0</span></div>
+    <div><span class="label">Bytes (hex):</span> <span id="bytesHex"></span></div>
+  </div>
+
+  <!-- ZXing UMD (LOCAL) -->
+  <script src="libs/zxing-v0.19.1/index.min.js"></script>
+
+  <script>
+    (function () {
+      const video = document.getElementById('video');
+      const torchBtn = document.getElementById('torchBtn');
+      const fileInput = document.getElementById('fileInput');
+
+      const statusEl = document.getElementById('status');
+      const textEl = document.getElementById('text');
+      const bytesLenEl = document.getElementById('bytesLen');
+      const bytesHexEl = document.getElementById('bytesHex');
+
+      let stream = null;
+      let reader = null;
+      let running = true;
+      let videoTrack = null;
+      let torchOn = false;
+
+      function setStatus(msg) {
+        statusEl.textContent = msg;
+      }
+
+      function bytesToHex(u8) {
+        return Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      function deriveBytesFromText(text) {
+        if (!text) return new Uint8Array();
+        try {
+          return new TextEncoder().encode(text);
+        } catch {
+          const arr = new Uint8Array(text.length);
+          for (let i = 0; i < text.length; i++) arr[i] = text.charCodeAt(i) & 0xff;
+          return arr;
+        }
+      }
+
+      async function enableTorchIfSupported() {
+        if (!videoTrack) return;
+        const caps = videoTrack.getCapabilities();
+        if ('torch' in caps) {
+          torchBtn.disabled = false;
+        }
+      }
+
+      torchBtn.addEventListener('click', async () => {
+        if (!videoTrack) return;
+        torchOn = !torchOn;
+        try {
+          await videoTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
+          setStatus(torchOn ? 'Torch ON' : 'Torch OFF');
+        } catch (e) {
+          console.warn('Torch toggle failed:', e);
+          setStatus('Torch not supported');
+        }
+      });
+
+      async function startCameraAutomatically() {
+        setStatus('Requesting camera…');
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+          });
+        } catch (e) {
+          setStatus('Camera error: ' + (e.message || e));
+          return;
+        }
+
+        videoTrack = stream.getVideoTracks()[0];
+        await enableTorchIfSupported();
+
+        video.srcObject = stream;
+        await video.play();
+
+        setStatus('Camera started, scanning…');
+
+        const ZX = window.ZXing || window.ZXingBrowser || window.ZXingLibrary || window.zxing;
+        if (!ZX || !ZX.BrowserMultiFormatReader) {
+          setStatus('ZXing UMD not found on page');
+          return;
+        }
+
+        reader = new ZX.BrowserMultiFormatReader();
+        scanLoop();
+      }
+
+      async function scanLoop() {
+        if (!running || !reader) return;
+
+        try {
+          const result = await reader.decodeFromVideoElement(video);
+          if (result) {
+            const text = result.text || '';
+            let bytes = null;
+
+            if (result.rawBytes instanceof Uint8Array) {
+              bytes = result.rawBytes;
+            } else if (typeof result.getRawBytes === 'function') {
+              const rb = result.getRawBytes();
+              bytes = rb instanceof Uint8Array ? rb : new Uint8Array(rb || []);
+            } else {
+              bytes = deriveBytesFromText(text);
+            }
+
+            textEl.textContent = text;
+            bytesLenEl.textContent = bytes.length;
+            bytesHexEl.textContent = bytesToHex(bytes);
+
+            setStatus('Decoded from camera');
+          }
+        } catch (e) {
+          // ignore "not found" errors
+        }
+
+        if (running) requestAnimationFrame(scanLoop);
+      }
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        setStatus('Decoding file…');
+
+        const img = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0);
+
+        const ZX = window.ZXing || window.ZXingBrowser || window.ZXingLibrary || window.zxing;
+        const reader2 = new ZX.BrowserMultiFormatReader();
+
+        try {
+          const result = await reader2.decodeFromCanvas(canvas);
+          const text = result.text || '';
+          const bytes = result.rawBytes instanceof Uint8Array
+            ? result.rawBytes
+            : deriveBytesFromText(text);
+
+          textEl.textContent = text;
+          bytesLenEl.textContent = bytes.length;
+          bytesHexEl.textContent = bytesToHex(bytes);
+
+          setStatus('Decoded from file');
+        } catch (e) {
+          setStatus('No QR found in file');
+        }
+      });
+
+      startCameraAutomatically();
+    })();
+  </script>
+</body>
+</html>
