@@ -1,193 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ZXing camera scanner (local, offline)</title>
-  <style>
-    body { font-family: sans-serif; margin: 1rem; background: #111; color: #eee; }
-    #video { width: 100%; max-width: 480px; background: #000; }
-    #controls { margin-top: 0.5rem; }
-    #result { margin-top: 1rem; white-space: pre-wrap; font-family: monospace; }
-    button { padding: 0.4rem 0.8rem; margin-right: 0.5rem; }
-    .label { font-weight: bold; }
-  </style>
+<meta charset="UTF-8">
+<title>Compact SeedQR Decoder</title>
+<style>
+  #cameraWrapper {
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 1 / 1;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+  }
+  #video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>
 </head>
 <body>
-  <h1>ZXing camera scanner (local)</h1>
 
-  <!-- Video preview -->
+<div id="cameraWrapper">
   <video id="video" playsinline></video>
+</div>
 
-  <!-- Controls -->
-  <div id="controls">
-    <button id="torchBtn" disabled>Toggle Torch</button>
-    <input type="file" id="fileInput" accept="image/*">
-  </div>
+<button id="torchBtn" disabled>Toggle Torch</button>
+<input type="file" id="fileInput" accept="image/*">
 
-  <!-- Result -->
-  <div id="result">
-    <div><span class="label">Status:</span> <span id="status">Initializing…</span></div>
-    <div><span class="label">Decoder:</span> ZXing</div>
-    <div><span class="label">Text:</span> <span id="text"></span></div>
-    <div><span class="label">Bytes (len):</span> <span id="bytesLen">0</span></div>
-    <div><span class="label">Bytes (hex):</span> <span id="bytesHex"></span></div>
-  </div>
+<div>
+  Status: <span id="status"></span><br>
+  Text: <span id="text"></span><br>
+  Bytes: <span id="hex"></span>
+</div>
 
-  <!-- ZXing UMD (LOCAL) -->
-  <script src="libs/zxing-v0.19.1/index.min.js"></script>
+<script src="libs/zxing-v0.19.1/index.min.js"></script>
+<script>
+(async () => {
+  const statusEl = document.getElementById('status');
+  const textEl = document.getElementById('text');
+  const hexEl = document.getElementById('hex');
+  const video = document.getElementById('video');
+  const fileInput = document.getElementById('fileInput');
+  const torchBtn = document.getElementById('torchBtn');
 
-  <script>
-    (function () {
-      const video = document.getElementById('video');
-      const torchBtn = document.getElementById('torchBtn');
-      const fileInput = document.getElementById('fileInput');
+  function setStatus(s){ statusEl.textContent = s; }
+  function toHex(u8){ return [...u8].map(b=>b.toString(16).padStart(2,'0')).join(''); }
 
-      const statusEl = document.getElementById('status');
-      const textEl = document.getElementById('text');
-      const bytesLenEl = document.getElementById('bytesLen');
-      const bytesHexEl = document.getElementById('bytesHex');
+  const reader = new ZXing.BrowserQRCodeReader();
 
-      let stream = null;
-      let reader = null;
-      let running = true;
-      let videoTrack = null;
-      let torchOn = false;
+  let stream = null;
+  let track = null;
+  let torchOn = false;
 
-      function setStatus(msg) {
-        statusEl.textContent = msg;
-      }
+  // FIXED GUARD — prevents "video already playing" warnings
+  async function safePlay(video) {
+    if (video.paused) {
+      try { await video.play(); } catch(e) {}
+    }
+  }
 
-      function bytesToHex(u8) {
-        return Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('');
-      }
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode:"environment" }
+      });
+      video.srcObject = stream;
 
-      function deriveBytesFromText(text) {
-        if (!text) return new Uint8Array();
-        try {
-          return new TextEncoder().encode(text);
-        } catch {
-          const arr = new Uint8Array(text.length);
-          for (let i = 0; i < text.length; i++) arr[i] = text.charCodeAt(i) & 0xff;
-          return arr;
-        }
-      }
+      await safePlay(video);
 
-      async function enableTorchIfSupported() {
-        if (!videoTrack) return;
-        const caps = videoTrack.getCapabilities();
-        if ('torch' in caps) {
-          torchBtn.disabled = false;
-        }
-      }
+      track = stream.getVideoTracks()[0];
+      const caps = track.getCapabilities();
+      if (caps.torch) torchBtn.disabled = false;
 
-      torchBtn.addEventListener('click', async () => {
-        if (!videoTrack) return;
-        torchOn = !torchOn;
-        try {
-          await videoTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
-          setStatus(torchOn ? 'Torch ON' : 'Torch OFF');
-        } catch (e) {
-          console.warn('Torch toggle failed:', e);
-          setStatus('Torch not supported');
+      reader.decodeFromVideoDevice(null, video, (result, err) => {
+        if (result) {
+          const txt = result.text || "";
+          const raw = result.rawBytes || new TextEncoder().encode(txt);
+          textEl.textContent = txt;
+          hexEl.textContent = toHex(raw);
+          // no camera status text
         }
       });
 
-      async function startCameraAutomatically() {
-        setStatus('Requesting camera…');
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
-            audio: false
-          });
-        } catch (e) {
-          setStatus('Camera error: ' + (e.message || e));
-          return;
-        }
+    } catch(e){
+      // no camera status text
+    }
+  }
 
-        videoTrack = stream.getVideoTracks()[0];
-        await enableTorchIfSupported();
+  function stopCamera() {
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+      track = null;
+    }
+  }
 
-        video.srcObject = stream;
-        await video.play();
+  await startCamera();
 
-        setStatus('Camera started, scanning…');
+  torchBtn.onclick = async () => {
+    if (!track) return;
+    torchOn = !torchOn;
+    try {
+      await track.applyConstraints({ advanced:[{torch:torchOn}] });
+    } catch(e){}
+  };
 
-        const ZX = window.ZXing || window.ZXingBrowser || window.ZXingLibrary || window.zxing;
-        if (!ZX || !ZX.BrowserMultiFormatReader) {
-          setStatus('ZXing UMD not found on page');
-          return;
-        }
+  // FILE DECODE — restored to last known working version
+  fileInput.onchange = async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
 
-        reader = new ZX.BrowserMultiFormatReader();
-        scanLoop();
-      }
+    stopCamera();
+    setStatus("Decoding file…");
 
-      async function scanLoop() {
-        if (!running || !reader) return;
+    const imgEl = document.createElement("img");
+    imgEl.src = URL.createObjectURL(file);
+    await imgEl.decode();
 
-        try {
-          const result = await reader.decodeFromVideoElement(video);
-          if (result) {
-            const text = result.text || '';
-            let bytes = null;
+    try {
+      const result = await reader.decodeFromImage(imgEl);
+      const txt = result.text || "";
+      const raw = result.rawBytes || new TextEncoder().encode(txt);
 
-            if (result.rawBytes instanceof Uint8Array) {
-              bytes = result.rawBytes;
-            } else if (typeof result.getRawBytes === 'function') {
-              const rb = result.getRawBytes();
-              bytes = rb instanceof Uint8Array ? rb : new Uint8Array(rb || []);
-            } else {
-              bytes = deriveBytesFromText(text);
-            }
+      textEl.textContent = txt;
+      hexEl.textContent = toHex(raw);
+      setStatus("Decoded from file");
+    } catch(e){
+      setStatus("No QR found in file");
+    }
 
-            textEl.textContent = text;
-            bytesLenEl.textContent = bytes.length;
-            bytesHexEl.textContent = bytesToHex(bytes);
+    await startCamera();
+  };
+})();
+</script>
 
-            setStatus('Decoded from camera');
-          }
-        } catch (e) {
-          // ignore "not found" errors
-        }
-
-        if (running) requestAnimationFrame(scanLoop);
-      }
-
-      fileInput.addEventListener('change', async () => {
-        const file = fileInput.files[0];
-        if (!file) return;
-
-        setStatus('Decoding file…');
-
-        const img = await createImageBitmap(file);
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        ctx.drawImage(img, 0, 0);
-
-        const ZX = window.ZXing || window.ZXingBrowser || window.ZXingLibrary || window.zxing;
-        const reader2 = new ZX.BrowserMultiFormatReader();
-
-        try {
-          const result = await reader2.decodeFromCanvas(canvas);
-          const text = result.text || '';
-          const bytes = result.rawBytes instanceof Uint8Array
-            ? result.rawBytes
-            : deriveBytesFromText(text);
-
-          textEl.textContent = text;
-          bytesLenEl.textContent = bytes.length;
-          bytesHexEl.textContent = bytesToHex(bytes);
-
-          setStatus('Decoded from file');
-        } catch (e) {
-          setStatus('No QR found in file');
-        }
-      });
-
-      startCameraAutomatically();
-    })();
-  </script>
 </body>
 </html>
