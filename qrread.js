@@ -30,6 +30,9 @@ async function handleQRFileUpload(file) {
         validateInputs();
         updateResults();
 
+        // ENABLE CLEAR BUTTON
+        document.getElementById('clearBtn').disabled = false;
+        
         msgBox.textContent = "QR decoded successfully — seed words loaded.";
         msgBox.style.color = "#176b1a"; // green
         

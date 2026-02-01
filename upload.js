@@ -52,6 +52,9 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
         const els = Array.from(document.querySelectorAll('#words input'));
         words.forEach((w, i) => { if (els[i]) els[i].value = w; });
 
+        // ENABLE CLEAR BUTTON AFTER SUCCESSFUL UPLOAD
+        document.getElementById('clearBtn').disabled = false;
+        
         // Store detection globally
         window.lastUpload =
           (path === "electrum")
@@ -72,13 +75,13 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
 });
 
 // Reset upload state on Clear
-document.getElementById('clear').addEventListener('click', () => {
+document.getElementById('clearBtn').addEventListener('click', () => {
   const fileInput   = document.getElementById('qrUpload');
   const fileLabel   = document.querySelector('label[for="qrUpload"]');
   const fileNameEl  = document.getElementById('fileName');
   const getBtn      = document.getElementById('make');
   const msgBox      = document.getElementById('qrUploadMsg');
-  const errorBox      = document.getElementById('qrError');
+  const errorBox    = document.getElementById('qrError');
   const hint        = document.getElementById('qrHint');
 
   if (fileInput) {
@@ -94,7 +97,22 @@ document.getElementById('clear').addEventListener('click', () => {
   if (msgBox) msgBox.textContent = "";
   if (errorBox) errorBox.textContent = "";
   if (window.debug && getBtn) getBtn.style.display = 'inline-block';
+  
+  // Clear word inputs and notify listeners so validators run
+  document.querySelectorAll('#words input').forEach(i => { 
+    i.value = '';
+    i.classList.remove('invalid');
+    i.dispatchEvent(new Event('input', { bubbles: true }));
+  }); 
+  
+  // Recompute UI state and force final clear state
+  if (typeof validateInputs === 'function') validateInputs();
+  if (typeof updateResults === 'function') updateResults();
+  const clearBtn = document.getElementById('clearBtn');
+  if (clearBtn) clearBtn.disabled = true;
+  window.lastUpload = null;
 });
+
 
 async function decodeSeedWordsFromFile(file) {
   const { text, bytes } = await decodeQRFromFile(file);
