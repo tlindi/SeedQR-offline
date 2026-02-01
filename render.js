@@ -30,6 +30,11 @@ function renderQR(payloadBytes) {
   if (qrcodeElement) {
     qrcodeElement.innerHTML = '';
     qrcodeElement.appendChild(canvas);
+
+  // --- CAMERA: stop camera and show QR view ---
+  if (window.stopCamera) window.stopCamera();
+  if (window.showQRCode) window.showQRCode();
+
   } else {
     console.warn("#qrcode element not found");
   }

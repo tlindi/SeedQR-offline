@@ -4,14 +4,14 @@ Offline generate and decode SeedQR style 12-word phrases of Electrum and BIP39 o
 
 Complies with: https://github.com/SeedSigner/seedsigner/blob/dev/docs/seed_qr/README.md
 
-## todo for v0.2
-
-- [ ] Feature: Mobile phone camera (or large jpg) support
+## ToDo
+- [ ] Test and verify electrum seed functions
 
 ## Done
-- [x] paste whole seed splitted to boxes
-- [x] validate QR (all BIP39 and Electrums)
-- [x] upload detects seed type
+- [x] Feature: Mobile phone camera support v0.2
+- [x] Paste whole seed splitted to boxes
+- [x] Validate QR (all BIP39 and Electrums)
+- [x] Upload detects seed type
 - [x] Electrum 2FA detected
 - [X] Fix: JPG decoding - jpg smeared too small QRs so increased QR size to make decoding possible
 

@@ -1,0 +1,129 @@
+<!-- scanner.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Compact SeedQR Decoder</title>
+
+<!-- Shared camera + layout stylesheet -->
+<link rel="stylesheet" href="css/styles.css">
+
+</head>
+<body>
+
+<div id="cameraWrapper">
+  <video id="video" playsinline></video>
+</div>
+
+<button id="torchBtn" disabled>Toggle Torch</button>
+<input type="file" id="fileInput" accept="image/*">
+
+<div>
+  Status: <span id="status"></span><br>
+  Text: <span id="text"></span><br>
+  Bytes: <span id="hex"></span>
+</div>
+
+<script src="libs/zxing-v0.19.1/index.min.js"></script>
+<script>
+(async () => {
+  const statusEl = document.getElementById('status');
+  const textEl = document.getElementById('text');
+  const hexEl = document.getElementById('hex');
+  const video = document.getElementById('video');
+  const fileInput = document.getElementById('fileInput');
+  const torchBtn = document.getElementById('torchBtn');
+
+  function setStatus(s){ statusEl.textContent = s; }
+  function toHex(u8){ return [...u8].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+
+  const reader = new ZXing.BrowserQRCodeReader();
+
+  let stream = null;
+  let track = null;
+  let torchOn = false;
+
+  // FIXED GUARD — prevents "video already playing" warnings
+  async function safePlay(video) {
+    if (video.paused) {
+      try { await video.play(); } catch(e) {}
+    }
+  }
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode:"environment" }
+      });
+      video.srcObject = stream;
+
+      await safePlay(video);
+
+      track = stream.getVideoTracks()[0];
+      const caps = track.getCapabilities();
+      if (caps.torch) torchBtn.disabled = false;
+
+      reader.decodeFromVideoDevice(null, video, (result, err) => {
+        if (result) {
+          const txt = result.text || "";
+          const raw = result.rawBytes || new TextEncoder().encode(txt);
+          textEl.textContent = txt;
+          hexEl.textContent = toHex(raw);
+          // no camera status text
+        }
+      });
+
+    } catch(e){
+      // no camera status text
+    }
+  }
+
+  function stopCamera() {
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+      track = null;
+    }
+  }
+
+  await startCamera();
+
+  torchBtn.onclick = async () => {
+    if (!track) return;
+    torchOn = !torchOn;
+    try {
+      await track.applyConstraints({ advanced:[{torch:torchOn}] });
+    } catch(e){}
+  };
+
+  // FILE DECODE — restored to last known working version
+  fileInput.onchange = async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    stopCamera();
+    setStatus("Decoding file…");
+
+    const imgEl = document.createElement("img");
+    imgEl.src = URL.createObjectURL(file);
+    await imgEl.decode();
+
+    try {
+      const result = await reader.decodeFromImage(imgEl);
+      const txt = result.text || "";
+      const raw = result.rawBytes || new TextEncoder().encode(txt);
+
+      textEl.textContent = txt;
+      hexEl.textContent = toHex(raw);
+      setStatus("Decoded from file");
+    } catch(e){
+      setStatus("No QR found in file");
+    }
+
+    await startCamera();
+  };
+})();
+</script>
+
+</body>
+</html>

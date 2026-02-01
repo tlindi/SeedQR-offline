@@ -3,70 +3,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Compact SeedQR offline - v0.1</title>
+<title>Compact SeedQR offline</title>
+
+<!-- New camera + layout stylesheet -->
+<link rel="stylesheet" href="css/styles.css">
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  body { font-family: system-ui, sans-serif; margin: 20px; max-width: 900px; }
-  h1 { font-size: 20px; margin-bottom: 8px; }
-  label { font-weight: 600; }
-
-  .cards { 
-    display: flex;
-	gap: 20px;
-    margin-top:16px;
-	flex-wrap:
-	wrap;
-  }
-
-	.card {
-	  border: 1px solid #ccc;
-	  border-radius: 8px;
-	  padding: 16px;
-	  background: #fafafa;
-	  box-sizing: border-box;
-	  width: 100%;              /* ensure card defines the frame */
-	  max-width: 900px;         /* optional, keeps it neat */
-	}
-
-  .words {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 columns, 3 rows */
-    gap: 8px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .wordbox {
-     display: flex;
-     align-items: center;
-     gap: 4px;
-  }
-
-  .wordbox span {
-    font-size: 12px;
-    color: #666;
-    min-width: 20px;
-    text-align: right;
-  }
-
-  .words input[type="text"] {
-    width: 100%;
-	max-width: 100%;
-	padding: 8px;
-	box-sizing: border-box;   /* padding included in width */
-	font-family: ui-monospace, monospace;
-  }
-
-  button { padding: 8px 12px; font-weight: 600; }
-  pre { background: #f7f7f7; padding: 10px; overflow-x: auto; }
-  canvas { image-rendering: pixelated; }
-  .ok { color: #176b1a; }
-  .warn { color: #b36b00; font-weight: 600; }
-  .err { color: #b00020; }
-  small { color: #666; }
-  .invalid { border: 2px solid #b00020; background: #ffecec; }
-  
-</style>
 </head>
   <div id="debugBanner"
     style="display:none; padding:6px; background:#ffecec; color:#b00020;
@@ -76,25 +18,28 @@
 
   <h2>Compact SeedQR-offline for BIP39 and electrum 12 word seeds</h2>
   <p>
-    by tlindi 20260131
+    v0.2 by tlindi (C)20260201.2225
   </p>
   <h1>Debug, add to URL: ?debug=bip39, =electrum or =electrum_2fa </h1>
   <p>
     Write your 12 seed words or paste all 12 words at once, they’ll be split automatically.</br>
-	(consider copy-paste non-secure)</br>
+  (consider copy-paste non-secure)</br>
     When words are valid, a QR is generated automatically. Verify detected wallet type!</br>
   </p>
 
 <div class="cards">
   <!-- Seed words card -->
-	<div class="card">
-	  <label>Seed words (12):</label>
-	  <div class="words" id="words"></div>
-	  <div style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
-		<button id="make" style="display:none;">GetQR</button>
-		<button id="clear">Clear</button>
-	  </div>
-	</div>
+  <div class="card">
+    <div class="label-row">
+      <label>Seed words (12)</label>
+    </div>
+
+    <div class="words" id="words"></div>
+    <div style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
+    <button id="make" style="display:none;">GetQR</button>
+    <button id="clearBtn">Clear</button>
+    </div>
+  </div>
 
     <!-- Upload card -->
     <div class="card" style="text-align:center;">
@@ -119,60 +64,71 @@
   <!-- <div id="results" style="margin-top:16px; text-align:center; display:flex; gap:20px; flex-wrap:wrap;"> -->
   <div class="card" id="results" style="display:none;">
     <!-- QR and Seedstring Card -->
-	  <div class="card">
-		  <div style="margin-top:2px; display:flex; gap:2px; align-items:center; justify-content:center;">
-			<label>Wallet type:</label>
-			<pre id="version"></pre>
-		  </div>
-		  <div style="margin-top:2px; display:flex; gap:5px; align-items:center; justify-content:center;">
-			<label>Compact SeedQR (qrcode v1-LOW):</label>
-		  </div>
-		  <div id="qrcode" style="margin-top:20px; display:flex; gap:15px; align-items:center; justify-content:center;"></div>
-		  <div style="margin-top:10px; text-align:center;">
-		    <label>Seed words (string):</label>
-     	  <pre id="wordString" style="white-space:pre-wrap;"></pre>
-	    </div>
-		<div style="margin-top:20px; display:flex; gap:5px; align-items:center; justify-content:center;">
-		  <small>Print and manually transcribe on a 21×21 template.</small>
-        </div>
-	  </div>
+    <div class="card">
+      <div style="margin-top:2px; display:flex; gap:2px; align-items:center; justify-content:center;">
+      <label>Wallet type:</label>
+      <pre id="version"></pre>
+      </div>
+      <div style="margin-top:2px; display:flex; gap:5px; align-items:center; justify-content:center;">
+      <label>Compact SeedQR (qrcode v1-LOW):</label>
+      </div>
+
+      <!-- Camera view + QR view share this area -->
+      <div id="cameraWrapper">
+        <video id="video" playsinline></video>
+        <button id="torchBtn" disabled>Toggle Torch</button>
+      </div>
+
+      <div id="qrcode" style="margin-top:20px; display:flex; gap:15px; align-items:center; justify-content:center;"></div>
+
+      <div style="margin-top:10px; text-align:center;">
+        <label>Seed words (string):</label>
+        <pre id="wordString" style="white-space:pre-wrap;"></pre>
+      </div>
+      <div style="margin-top:20px; display:flex; gap:5px; align-items:center; justify-content:center;">
+        <small>Print and manually transcribe on a 21×21 template.</small>
+      </div>
+    </div>
 
       <!-- Status Card -->
-        <div class="card" id="statusCard" style="display:none;">
-	    <span id="status"></span>
+      <div class="card" id="statusCard" style="display:none;">
+         <span id="status"></span>
       </div>
 
       <!-- Payload Card -->
-	  <div class="card" id="payloadCard">
+    <div class="card" id="payloadCard">
         <label>Decimal word indices:</label>
         <pre id="wordIndices"></pre>
-		<label>Payload (Python bytes, SeedQR, hex and 132 bits):</label>
-		<pre id="pbytes"></pre>
-		<pre id="hex"></pre>
-		<pre id="bytes"></pre>
-		<pre id="bits"></pre>
+    <label>Payload (Python bytes, SeedQR, hex and 132 bits):</label>
+    <pre id="pbytes"></pre>
+    <pre id="hex"></pre>
+    <pre id="bytes"></pre>
+    <pre id="bits"></pre>
       </div>
-   </div>	  
+   </div>    
 </div>
 
 <!-- external -->
 <!-- <script src="qrcode.min.js"></script> -->
-<script src="crypto-js.min.js"></script>
-<script src="jsQR.js"></script>
-<script src="qrcodegen-v1.8.0-es5.js"></script>
-<!-- <script src="qrcodegen-v1.8.0-es6.js"></script> <!-- new -->
+<script src="libs/crypto-js.min.js"></script>
+<script src="libs/jsQR.js"></script>
+<script src="libs/qrcodegen-v1.8.0-es5.js"></script>
+<script src="libs/zxing-v0.19.1/index.min.js"></script>
 <!-- tlindi -->
-<script src="debug.js"></script>
+<script src="js/debug.js"></script>
+<script src="js/reader.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/scanner.js"></script>
 <script src="WORDLIST.js"></script>
 <script src="render.js"></script>
 <script src="common.js"></script>
 <script src="input.js"></script>
-<script src="helpers.js"></script>
+<script src="js/helpers.js"></script>
 <script src="seedqr.js"></script>
 <script src="bip39.js"></script>
 <script src="electrum.js"></script>
+<script src="js/decoder.js"></script>
 <script src="status.js"></script>
-<script src="upload.js"></script>
 <script src="qrread.js"></script>
 
 <script>
@@ -194,8 +150,11 @@ window.addEventListener('DOMContentLoaded', () => {
     banner.style.display = "block";
   } else {
     banner.style.display = "none"; // hide in production
-    if (payloadCard) payloadCard.style.display = 'none';
+    // DO NOT hide payloadCard anymore
+    // if (payloadCard) payloadCard.style.display = 'none';
   }
+
+  document.getElementById('results').style.display = 'block';
 
   // Build the inputs
   makeInputs();
@@ -208,6 +167,9 @@ window.addEventListener('DOMContentLoaded', () => {
     getBtn.style.display = 'inline-block';
     getBtn.addEventListener('click', updateResults);
     statusCard.style.display = 'block';
+  }
+  if (window.initCameraOnLoad) { 
+    window.initCameraOnLoad(); 
   }
 });
 
@@ -254,6 +216,10 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 
   const msgBox = document.getElementById('qrUploadMsg');
   if (msgBox) msgBox.textContent = "";
+  
+  if (window.resetCameraOnClear) {
+    window.resetCameraOnClear();
+  }
 });
 
 </script>
