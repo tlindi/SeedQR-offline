@@ -86,8 +86,8 @@ function validateInputs() {
   // disable Make QR if any invalid OR not all filled
   document.getElementById('make').disabled = invalidFound || !allFilled;
 
-  // disable Clear if nothing entered
-  document.getElementById('clear').disabled = !anyFilled;
+  // disable clearBtn if nothing entered
+  document.getElementById('clearBtn').disabled = !anyFilled;
 }
 
 function tryAutocomplete(inputEl) {
