@@ -1,6 +1,6 @@
 // scanner.js
 // Camera controller for integrated SeedQR.html scanning
-// Provides a clean public API: startCamera, stopCamera, showCamera, showQRCode
+// Provides a clean public API via window: startCamera, stopCamera, showCamera, showQRCode
 
 let cameraStream = null;
 let cameraTrack = null;
@@ -16,7 +16,7 @@ const torchBtn = document.getElementById("torchBtn");
 //  CAMERA START / STOP
 // -------------------------------
 
-export async function startCamera() {
+async function startCamera() {
   try {
     cameraStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: "environment" }
@@ -42,7 +42,7 @@ export async function startCamera() {
   }
 }
 
-export function stopCamera() {
+function stopCamera() {
   if (cameraStream) {
     cameraStream.getTracks().forEach(t => t.stop());
     cameraStream = null;
@@ -57,13 +57,13 @@ export function stopCamera() {
 //  VISIBILITY TOGGLES
 // -------------------------------
 
-export function showCamera() {
+function showCamera() {
   cameraWrapper.style.display = "block";
   videoEl.style.display = "block";
   qrcodeWrapper.style.display = "none";
 }
 
-export function showQRCode() {
+function showQRCode() {
   cameraWrapper.style.display = "none";
   videoEl.style.display = "none";
   qrcodeWrapper.style.display = "flex";
@@ -87,13 +87,22 @@ torchBtn.addEventListener("click", async () => {
 //  INITIALIZATION HELPERS
 // -------------------------------
 
-export async function initCameraOnLoad() {
+async function initCameraOnLoad() {
   showCamera();
   await startCamera();
+  scanFrame();
 }
 
-export async function resetCameraOnClear() {
+async function resetCameraOnClear() {
   stopCamera();
   showCamera();
   await startCamera();
 }
+
+// Expose public API on window for non-module pages
+window.startCamera = startCamera;
+window.stopCamera = stopCamera;
+window.showCamera = showCamera;
+window.showQRCode = showQRCode;
+window.initCameraOnLoad = initCameraOnLoad;
+window.resetCameraOnClear = resetCameraOnClear;
