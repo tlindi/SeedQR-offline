@@ -205,6 +205,8 @@ window.handleDecodedBytes = window.handleDecodedBytes || (async function(u8) {
         const ew = decodeElectrumSeed(u8);
         if (Array.isArray(ew)) {
           window.lastUpload = { type: "electrum", words: ew, bytes: u8 };
+          const words = (window.lastUpload && window.lastUpload.words) || [];
+          Array.from(document.querySelectorAll('#words input')).forEach((el,i)=> el.value = words[i] || '');
           if (typeof updateResults === 'function') return updateResults();
         }
       } catch (e) {
@@ -212,27 +214,58 @@ window.handleDecodedBytes = window.handleDecodedBytes || (async function(u8) {
       }
     }
 
-    // decodeSeedQRPayload is expected to be async; await its result
+    // decodeSeedQRPayload is expected to be async; try raw payload first,
+    // then a short list of deterministic transforms if needed.
+    let decoded = null;
+    let payload = u8;
+
     if (typeof decodeSeedQRPayload === 'function') {
       try {
-        const decoded = await decodeSeedQRPayload(u8);
-        if (decoded && Array.isArray(decoded.words)) {
-          window.lastUpload = { type: "seedqr", words: decoded.words, bytes: u8 };
-          console.log('decodeSeedQRPayload succeeded', { wordsCount: decoded.words.length });
-          if (typeof updateResults === 'function') return updateResults();
-        } else {
-          // decoder returned no words; fall through to fallback storage
-          console.warn('decodeSeedQRPayload returned no words', decoded);
+        // try the raw payload first
+        decoded = await decodeSeedQRPayload(payload);
+        } catch (e) {
+          console.error('decodeSeedQRPayload initial error', e);
+          }
+          // helper transforms
+          const rev = u => Uint8Array.from(u).reverse();
+          const swapPairs = u => { const r = new Uint8Array(u); for (let i = 0; i + 1 < r.length; i += 2) { const t = r[i]; r[i] = r[i+1]; r[i+1] = t; } return r; };
+          const swapNibbles = u => Uint8Array.from(u, v => (((v & 0x0f) << 4) | ((v & 0xf0) >> 4)) & 0xff);
+          const rot = (u, n) => { const r = new Uint8Array(u.length); for (let i = 0; i < u.length; i++) r[i] = (((u[i] << n) | (u[i] >> (8 - n))) & 0xff); return r; };
+
+          const valid = d => d && Array.isArray(d.words) && d.words.length === 12;
+
+          if (!valid(decoded)) {
+            const candidates = [rev, swapPairs, swapNibbles];
+            for (let n = 1; n < 8; n++) candidates.push(u => rot(u, n));
+            
+            for (const fn of candidates) {
+              try {
+                const test = fn(payload);
+                const d = await decodeSeedQRPayload(test);
+                if (valid(d)) { decoded = d; payload = test; break; }
+              } catch (e) {
+                // ignore and continue trying other transforms
+              }
+            }
+          }
         }
-      } catch (e) {
-        console.error('decodeSeedQRPayload rejected or threw', e);
-        // fall through to fallback storage
-      }
-    }
+
+        // If decoded now contains valid words, set lastUpload and update UI below.
+        if (decoded && Array.isArray(decoded.words)) {
+          window.lastUpload = { type: "seedqr", words: decoded.words, bytes: payload };
+          console.log('decoded payload hex', Array.from(payload || []).map(b => b.toString(16).padStart(2,'0')).join(''));
+          console.log('decodeSeedQRPayload succeeded', { wordsCount: decoded.words.length });
+          console.log('decoded payload', { hex: Array.from(payload || []).map(b => b.toString(16).padStart(2,'0')).join(''), dec: Array.from(payload || []).join(',') });
+          console.log('decoded words', Array.isArray(decoded.words) ? decoded.words.join(' ') : String(decoded.words));
+         
+          if (typeof updateResults === 'function') return updateResults();
+        }
 
     // fallback: store bytes and call updateResults if present
     console.log('handleDecodedBytes falling back to raw bytes storage');
     window.lastUpload = { type: "camera", bytes: u8 };
+    const words = (window.lastUpload && window.lastUpload.words) || [];
+    Array.from(document.querySelectorAll('#words input')).forEach((el,i)=> el.value = words[i] || '');
     if (typeof updateResults === 'function') updateResults();
 
   } catch (e) {
