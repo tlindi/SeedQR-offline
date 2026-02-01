@@ -76,45 +76,10 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
   reader.readAsDataURL(file);
 });
 
-// Reset upload state on Clear
+// Reload page on Clear
 document.getElementById('clearBtn').addEventListener('click', () => {
-  const fileInput   = document.getElementById('qrUpload');
-  const fileLabel   = document.querySelector('label[for="qrUpload"]');
-  const fileNameEl  = document.getElementById('fileName');
-  const getBtn      = document.getElementById('make');
-  const msgBox      = document.getElementById('qrUploadMsg');
-  const errorBox    = document.getElementById('qrError');
-  const hint        = document.getElementById('qrHint');
-
-  if (fileInput) {
-    fileInput.value = "";
-    fileInput.disabled = false;
-  }
-  if (fileLabel) {
-    fileLabel.style.opacity = "1";
-    fileLabel.style.pointerEvents = "auto";
-  }
-  if (fileNameEl) fileNameEl.textContent = "";
-  if (hint) hint.style.display = "block";
-  if (msgBox) msgBox.textContent = "";
-  if (errorBox) errorBox.textContent = "";
-  if (window.debug && getBtn) getBtn.style.display = 'inline-block';
-  
-  // Clear word inputs and notify listeners so validators run
-  document.querySelectorAll('#words input').forEach(i => { 
-    i.value = '';
-    i.classList.remove('invalid');
-    i.dispatchEvent(new Event('input', { bubbles: true }));
-  }); 
-  
-  // Recompute UI state and force final clear state
-  if (typeof validateInputs === 'function') validateInputs();
-  if (typeof updateResults === 'function') updateResults();
-  const clearBtn = document.getElementById('clearBtn');
-  if (clearBtn) clearBtn.disabled = true;
-  window.lastUpload = null;
+  location.reload();
 });
-
 
 async function decodeSeedWordsFromFile(file) {
   const { text, bytes } = await decodeQRFromFile(file);
