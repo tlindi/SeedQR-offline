@@ -1,4 +1,5 @@
-/* === Camera View Styling (moved from scanner.html) === */
+/* styles.css */
+/* === Camera View Styling === */
 
 #cameraWrapper {
   width: 260px;      /* matches QR canvas size */
@@ -6,8 +7,8 @@
   margin: 20px auto;
   overflow: hidden;
   background: #000;
-  margin: 20px auto; /* centers it like the QR code */
-  display: block;
+  margin: 20px auto;
+  display: none;
 }
 
 #cameraWrapper video {
@@ -16,13 +17,16 @@
   object-fit: cover;
 }
 
-/* Torch button styling (basic, can be improved later) */
 #torchBtn {
-  margin-top: 10px;
-  display: none; /* shown only when scanning */
+  display: none;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
 }
 
-/* === QR Code Container Visibility Control === */
+
+/* === QR Code Container === */
 
 #qrcode {
   display: flex;
