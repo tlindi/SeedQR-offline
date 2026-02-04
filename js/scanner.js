@@ -233,9 +233,21 @@ if (cameraBtn) {
       cameraBtn.setAttribute('aria-pressed', 'false');
       cameraBtn.classList.remove('active');
       cameraBtn.textContent = 'Scan';
+
       await stopCamera();
-      showQRCode();
-    } else {
+      showQRCode();   // ← this always forces results visible
+
+      // NOW hide results if no QR was decoded
+      const anyWordFilled = Array.from(document.querySelectorAll('#words input'))
+        .some(i => i.value.trim() !== '');
+
+      if (!anyWordFilled) {
+        const results = document.getElementById('results');
+        if (results) results.style.display = 'none';
+      }
+    }
+
+ else {
       // turn camera on
       cameraBtn.disabled = true; // prevent double-click while starting
       

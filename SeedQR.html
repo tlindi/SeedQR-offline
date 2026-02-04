@@ -63,7 +63,7 @@
     </p>
 
     <div id="cameraControls">
-      <button id="cameraBtn" aria-pressed="false">Scan QR</button>
+      <button id="cameraBtn" aria-pressed="false">Scan</button>
       <button id="torchBtn" aria-pressed="false" disabled style="display:none;">Torch</button>
     </div>
   </div>
@@ -73,12 +73,13 @@
   <div class="card" id="results" style="display:none;">
     <!-- QR and Seedstring Card -->
     <div class="card">
-      <div style="margin-top:2px; gap:5px; align-items:center; justify-content:center;">
+      <div style="margin-top:2px; text-align:center;">
         <label>Compact SeedQR (qrcode v1-LOW)</label>
-        <p id="qrHint" style="margin-top:8px; color:#666; font-size:14px;">
+        <p id="qrHint" style="margin-top:4px; color:#666; font-size:14px;">
           Print and manually transcribe on a 21×21 template.
         </p>
       </div>
+
 
       <div id="cameraWrapper">
         <video id="video" playsinline></video>
