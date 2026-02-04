@@ -160,7 +160,7 @@ function stopCamera() {
   if (cameraBtn) {
     cameraBtn.setAttribute('aria-pressed', 'false');
     cameraBtn.classList.remove('active');
-    cameraBtn.textContent = 'Camera On';
+    cameraBtn.textContent = 'Scan';
     cameraBtn.disabled = false;
   }
   if (videoEl && videoEl.srcObject) {
@@ -232,7 +232,7 @@ if (cameraBtn) {
       // turn camera off
       cameraBtn.setAttribute('aria-pressed', 'false');
       cameraBtn.classList.remove('active');
-      cameraBtn.textContent = 'Camera On';
+      cameraBtn.textContent = 'Scan';
       await stopCamera();
       showQRCode();
     } else {

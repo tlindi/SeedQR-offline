@@ -73,8 +73,8 @@
   <div class="card" id="results" style="display:none;">
     <!-- QR and Seedstring Card -->
     <div class="card">
-      <div style="margin-top:2px; display:flex; gap:5px; align-items:center; justify-content:center;">
-        <label>Compact SeedQR (qrcode v1-LOW):</label>
+      <div style="margin-top:2px; gap:5px; align-items:center; justify-content:center;">
+        <label>Compact SeedQR (qrcode v1-LOW)</label>
         <p id="qrHint" style="margin-top:8px; color:#666; font-size:14px;">
           Print and manually transcribe on a 21×21 template.
         </p>
@@ -84,16 +84,21 @@
         <video id="video" playsinline></video>
       </div>
 
-      <div id="qrcode">
+      <div id="qrcode"
         style="margin-top:20px;
         display:flex; gap:15px;
         align-items:center;
         justify-content:center;">
       </div>
 
-      <div style="margin-top:2px; display:flex; gap:2px; align-items:center; justify-content:center;">
+      <div 
+        style="margin-top:2px;
+        display:flex;
+        gap:2px;
+        align-items:center;
+        justify-content:center;">
         <label>Wallet type:</label>
-      <pre id="version"></pre>
+        <pre id="version"></pre>
       </div>
 
       <div style="margin-top:10px; text-align:center;">
