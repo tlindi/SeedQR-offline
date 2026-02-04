@@ -1,4 +1,7 @@
 // upload.js (refactored to use centralized handleDecodedResult)
+document.getElementById('uploadBtn').addEventListener('click', () => {
+  document.getElementById('qrUpload').click();
+});
 
 document.getElementById('qrUpload').addEventListener('change', async (event) => {
   const file = event.target.files[0];
