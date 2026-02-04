@@ -103,7 +103,6 @@ async function startCamera() {
           payload = null;
         }
 
-
         if (!payload) {
           console.error('No payload produced from result');
           return;
@@ -115,29 +114,34 @@ async function startCamera() {
 
         console.log('ZXing detected QR', { payloadLength: payload.length });
 
-      // inside ZXing callback after payload extraction and locking
-    if (typeof window.handleDecodedBytes === 'function') {
-      try {
-        const p = window.handleDecodedBytes(payload);
-        if (p && typeof p.catch === 'function') p.catch(e => console.error('handleDecodedBytes rejected', e));
-      } catch (e) {
-        console.error('handleDecodedBytes sync error', e);
-    }
-    } else {
-      // legacy fallback (temporary): store raw bytes and update UI
-      window.lastUpload = { type: 'camera', bytes: payload };
-      if (typeof updateResults === 'function') {
-        try { updateResults(); } catch (e) { console.error('updateResults error', e); }
-      } else {
-        console.log('Decoded QR (camera bytes) fallback stored', { payloadLength: payload.length });
-    }
-  }
+        // inside ZXing callback after payload extraction and locking
+        if (typeof window.handleDecodedBytes === 'function') {
+          try {
+            const p = window.handleDecodedBytes(payload);
+            if (p && typeof p.catch === 'function') p.catch(e => console.error('handleDecodedBytes rejected', e));
+          } catch (e) {
+            console.error('handleDecodedBytes sync error', e);
+          }
+        }
 
+        // Hide camera card after successful QR decode (always run)
+        const cameraCard = document.getElementById('cameraCard');
+        if (cameraCard) cameraCard.style.display = 'none';
+
+        // fallback only if handler missing
+        if (typeof window.handleDecodedBytes !== 'function') {
+          // legacy fallback (temporary): store raw bytes and update UI
+          window.lastUpload = { type: 'camera', bytes: payload };
+          if (typeof updateResults === 'function') {
+            try { updateResults(); } catch (e) { console.error('updateResults error', e); }
+          } else {
+            console.log('Decoded QR (camera bytes) fallback stored', { payloadLength: payload.length });
+          }
+        }
       });
     } else {
       console.warn('ZXing reader not available; camera will start but no continuous decode will run.');
     }
-
   } catch (err) {
     console.error("Camera start failed:", err);
   }
@@ -173,6 +177,8 @@ function stopCamera() {
   // HIDE CAMERA CARD ALWAYS WHEN CAMERA STOPS
   if (cameraWrapper) cameraWrapper.style.display = "none";
   if (videoEl) videoEl.style.display = "none";
+  const cameraCard = document.getElementById('cameraCard');
+  if (cameraCard) cameraCard.style.display = 'none';
 }
 
 
@@ -257,13 +263,12 @@ if (cameraBtn) {
         // QR detected → keep results visible, keep upload hidden
         if (uploadCard) uploadCard.style.display = 'none';
       }
-    }
-
- else {
+    } else {
       // turn camera on
       cameraBtn.disabled = true; // prevent double-click while starting
       
-      document.getElementById('results').style.display = 'block';
+      const resultsEl = document.getElementById('results');
+      if (resultsEl) resultsEl.style.display = 'block';
 
       // HIDE UPLOAD CARD During scanning
       const uploadCard = document.getElementById('uploadCard');
