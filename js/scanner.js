@@ -166,9 +166,15 @@ function stopCamera() {
   if (videoEl && videoEl.srcObject) {
     try { videoEl.srcObject = null; } catch (e) {}
   }
-  // clear the one-shot lock so future camera starts can scan
+
+  // clear the one-shot lock
   window._scanLocked = false;
+
+  // HIDE CAMERA CARD ALWAYS WHEN CAMERA STOPS
+  if (cameraWrapper) cameraWrapper.style.display = "none";
+  if (videoEl) videoEl.style.display = "none";
 }
+
 
 // -------------------------------
 //  VISIBILITY TOGGLES
@@ -229,21 +235,27 @@ if (cameraBtn) {
   cameraBtn.addEventListener("click", async () => {
     const isOn = cameraBtn.getAttribute('aria-pressed') === 'true';
     if (isOn) {
-      // turn camera off
       cameraBtn.setAttribute('aria-pressed', 'false');
       cameraBtn.classList.remove('active');
       cameraBtn.textContent = 'Scan';
 
       await stopCamera();
-      showQRCode();   // ← this always forces results visible
+      showQRCode();   // resets UI
 
-      // NOW hide results if no QR was decoded
+      // Check if any seed words were decoded
       const anyWordFilled = Array.from(document.querySelectorAll('#words input'))
         .some(i => i.value.trim() !== '');
 
+      const results = document.getElementById('results');
+      const uploadCard = document.getElementById('uploadCard');
+
       if (!anyWordFilled) {
-        const results = document.getElementById('results');
+        // No QR detected → hide results, show upload
         if (results) results.style.display = 'none';
+        if (uploadCard) uploadCard.style.display = 'block';
+      } else {
+        // QR detected → keep results visible, keep upload hidden
+        if (uploadCard) uploadCard.style.display = 'none';
       }
     }
 
