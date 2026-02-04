@@ -80,7 +80,6 @@
         </p>
       </div>
 
-
       <div id="cameraWrapper">
         <video id="video" playsinline></video>
       </div>
@@ -150,6 +149,8 @@
 <script src="qrread.js"></script>
 
 <script>
+
+// MAIN APPLICATION loop
 window.addEventListener('DOMContentLoaded', () => {
   const banner = document.getElementById('debugBanner');
   const payloadCard = document.getElementById('payloadCard');
@@ -178,67 +179,31 @@ window.addEventListener('DOMContentLoaded', () => {
   attachPasteHandler();
   validateInputs();
 
-  if (DEBUG) {
-    const getBtn = document.getElementById('make');
-    getBtn.style.display = 'inline-block';
-    getBtn.addEventListener('click', updateResults);
-    statusCard.style.display = 'block';
+  // WHEN DEBUG MODE Auto-fill debug words after inputs exist
+  if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
+    const els = document.querySelectorAll('#words input');
+    els.forEach((inp, i) => {
+      inp.value = window.DEBUG_WORDS[i] || "";
+    });
+
+    // Trigger normal pipeline
+    validateInputs();
+    updateResults();
+
+    const results = document.getElementById('results');
+    if (results) results.style.display = 'block';
+    
+    // Set Clear button enabled/disabled based on whether any seed word is filled
+    const clearBtn = document.getElementById('clearBtn');
+    const inputs = document.querySelectorAll('#words input');
+    const anyFilled = Array.from(inputs).some(i => i.value.trim() !== "");
+    clearBtn.disabled = !anyFilled;
   }
 });
 
 // CLEAR BUTTON
 document.getElementById('clearBtn').addEventListener('click', () => {
-  // wipe seed inputs
-  const els = document.querySelectorAll('#words input');
-  els.forEach((inp, i) => {
-    if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
-      inp.value = window.DEBUG_WORDS[i] || "";
-    } else {
-      inp.value = "";
-    }
-  });
-
-  // wipe results
-  const statusEl = document.getElementById('status');
-  if (statusEl) statusEl.textContent = "";
-
-  const hexEl = document.getElementById('hex');
-  if (hexEl) hexEl.textContent = "";
-
-  const bitsEl = document.getElementById('bits');
-  if (bitsEl) bitsEl.textContent = "";
-
-  const versionEl = document.getElementById('version');
-  if (versionEl) versionEl.textContent = "";
-
-  const wordStringEl = document.getElementById('wordString');
-  if (wordStringEl) wordStringEl.textContent = "";
-
-  const qrEl = document.getElementById('qrcode');
-  if (qrEl) qrEl.innerHTML = "";
-
-  const qrErrorEl = document.getElementById('qrError');
-  if (qrErrorEl) qrErrorEl.textContent = "";
-
-  // clear file input
-  const fileInput = document.getElementById('qrUpload');
-  if (fileInput) fileInput.value = "";
-
-  const msgBox = document.getElementById('qrUploadMsg');
-  if (msgBox) msgBox.textContent = "";
-
-  const uploadCard = document.getElementById('uploadCard');
-  if (uploadCard) uploadCard.style.display = 'block';
-
-  const cameraCard = document.getElementById('cameraCard');
-  if (cameraCard) cameraCard.style.display = 'block';
-
-  const resultsCard = document.getElementById('results');
-  if (resultsCard) resultsCard.style.display = 'none';
-  
-  if (window.resetCameraOnClear) {
-    window.resetCameraOnClear();
-  }
+  window.location.reload();
 });
 
 </script>

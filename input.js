@@ -87,7 +87,8 @@ function validateInputs() {
   document.getElementById('make').disabled = invalidFound || !allFilled;
 
   // disable clearBtn if nothing entered
-  document.getElementById('clearBtn').disabled = !anyFilled;
+  const clearBtn = document.getElementById('clearBtn');
+  if (clearBtn) clearBtn.disabled = !anyFilled;
 }
 
 function tryAutocomplete(inputEl) {
