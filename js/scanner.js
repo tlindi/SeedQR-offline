@@ -54,7 +54,7 @@ async function startCamera() {
       cameraBtn.disabled = false;
       cameraBtn.setAttribute('aria-pressed', 'true');
       cameraBtn.classList.add('active');
-      cameraBtn.textContent = 'Camera Off';
+      cameraBtn.textContent = 'End Scan';
     }
 
     // Torch capability detection
@@ -195,17 +195,34 @@ if (torchBtn) {
     try {
       await cameraTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
       // reflect state for accessibility and visuals
-      torchBtn.setAttribute('aria-pressed', String(torchOn));
-      if (torchOn) torchBtn.classList.add('active'); else torchBtn.classList.remove('active');
+      torchBtn.setAttribute('aria-pressed', String(torchOn));      
+
+      if (torchOn) {
+        torchBtn.classList.add('active');
+        torchBtn.textContent = '* Torch *';   // ← INSERT HERE (torch ON)
+      } else {
+        torchBtn.classList.remove('active');
+        torchBtn.textContent = 'Torch';       // ← INSERT HERE (torch OFF)
+      }
+
     } catch (e) {
       // revert state on failure
       torchOn = !torchOn;
       torchBtn.setAttribute('aria-pressed', String(torchOn));
-      if (torchOn) torchBtn.classList.add('active'); else torchBtn.classList.remove('active');
+
+      if (torchOn) {
+        torchBtn.classList.add('active');
+        torchBtn.textContent = '* Torch *';   // ← SAME INSERT HERE
+      } else {
+        torchBtn.classList.remove('active');
+        torchBtn.textContent = 'Torch';       // ← SAME INSERT HERE
+      }
+
       console.warn("Torch toggle failed:", e);
     }
   });
 }
+
 
 // Camera On/Off control
 if (cameraBtn) {
