@@ -107,7 +107,6 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   const fileInput   = document.getElementById('qrUpload');
   const fileLabel   = document.querySelector('label[for="qrUpload"]');
   const fileNameEl  = document.getElementById('fileName');
-  const getBtn      = document.getElementById('make');
   const msgBox      = document.getElementById('qrUploadMsg');
   const errorBox    = document.getElementById('qrError');
   const hint        = document.getElementById('qrHint');
@@ -124,7 +123,6 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   if (hint) hint.style.display = "block";
   if (msgBox) msgBox.textContent = "";
   if (errorBox) errorBox.textContent = "";
-  if (window.debug && getBtn) getBtn.style.display = 'inline-block';
   
   // Clear word inputs and notify listeners so validators run
   document.querySelectorAll('#words input').forEach(i => { 
