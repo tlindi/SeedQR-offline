@@ -241,6 +241,10 @@ if (cameraBtn) {
       
       document.getElementById('results').style.display = 'block';
 
+      // HIDE UPLOAD CARD During scanning
+      const uploadCard = document.getElementById('uploadCard');
+      if (uploadCard) uploadCard.style.display = 'none';
+
       await initCameraOnLoad();
       // initCameraOnLoad will set cameraBtn state when startCamera completes,
       // but ensure button is enabled afterwards
@@ -248,7 +252,6 @@ if (cameraBtn) {
     }
   });
 }
-
 
 // -------------------------------
 //  INITIALIZATION HELPERS
