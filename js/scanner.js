@@ -295,7 +295,6 @@ async function resetCameraOnClear() {
   // ensure latch cleared before restarting
   window._scanLocked = false;
   showCamera();
-  await startCamera();
 }
 
 // Expose public API on window for non-module pages

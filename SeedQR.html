@@ -217,9 +217,6 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   const qrEl = document.getElementById('qrcode');
   if (qrEl) qrEl.innerHTML = "";
 
-  const resultsCard = document.getElementById('results');
-  if (resultsCard) resultsCard.style.display = 'none';
-
   const qrErrorEl = document.getElementById('qrError');
   if (qrErrorEl) qrErrorEl.textContent = "";
 
@@ -229,6 +226,15 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 
   const msgBox = document.getElementById('qrUploadMsg');
   if (msgBox) msgBox.textContent = "";
+
+  const uploadCard = document.getElementById('uploadCard');
+  if (uploadCard) uploadCard.style.display = 'block';
+
+  const cameraCard = document.getElementById('cameraCard');
+  if (cameraCard) cameraCard.style.display = 'block';
+
+  const resultsCard = document.getElementById('results');
+  if (resultsCard) resultsCard.style.display = 'none';
   
   if (window.resetCameraOnClear) {
     window.resetCameraOnClear();
