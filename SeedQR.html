@@ -18,7 +18,7 @@
 
   <h2>Compact SeedQR-offline for BIP39 and electrum 12 word seeds</h2>
   <p>
-    v0.2 by tlindi (C)20260201.2225
+    v0.2.1 by tlindi (C)20260204
   </p>
   <h1>Debug, add to URL: ?debug=bip39, =electrum or =electrum_2fa </h1>
   <p>
@@ -66,17 +66,20 @@
     <!-- QR and Seedstring Card -->
     <div class="card">
       <div style="margin-top:2px; display:flex; gap:2px; align-items:center; justify-content:center;">
-      <label>Wallet type:</label>
+        <label>Wallet type:</label>
       <pre id="version"></pre>
       </div>
       <div style="margin-top:2px; display:flex; gap:5px; align-items:center; justify-content:center;">
-      <label>Compact SeedQR (qrcode v1-LOW):</label>
+        <label>Compact SeedQR (qrcode v1-LOW):</label>
       </div>
 
-      <!-- Camera view + QR view share this area -->
+      <div id="cameraControls"> 
+        <button id="torchBtn" aria-pressed="false" disabled>Toggle Torch</button>
+        <button id="cameraBtn" aria-pressed="false" disabled>Camera On</button>
+      </div>
+
       <div id="cameraWrapper">
         <video id="video" playsinline></video>
-        <button id="torchBtn" disabled>Toggle Torch</button>
       </div>
 
       <div id="qrcode" style="margin-top:20px; display:flex; gap:15px; align-items:center; justify-content:center;"></div>
@@ -167,9 +170,6 @@ window.addEventListener('DOMContentLoaded', () => {
     getBtn.style.display = 'inline-block';
     getBtn.addEventListener('click', updateResults);
     statusCard.style.display = 'block';
-  }
-  if (window.initCameraOnLoad) { 
-    window.initCameraOnLoad(); 
   }
 });
 

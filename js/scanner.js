@@ -12,6 +12,7 @@ const videoEl = document.getElementById("video");
 const cameraWrapper = document.getElementById("cameraWrapper");
 const qrcodeWrapper = document.getElementById("qrcode");
 const torchBtn = document.getElementById("torchBtn");
+const cameraBtn = document.getElementById("cameraBtn");
 
 // ZXing reader instance (requires libs/zxing-v0.19.1/index.min.js to be loaded first)
 let zxingReader = null;
@@ -45,6 +46,14 @@ async function startCamera() {
 
     cameraTrack = cameraStream.getVideoTracks()[0];
 
+    // enable camera control and reflect active state
+    if (cameraBtn) {
+      cameraBtn.disabled = false;
+      cameraBtn.setAttribute('aria-pressed', 'true');
+      cameraBtn.classList.add('active');
+      cameraBtn.textContent = 'Camera Off';
+    }
+
     // Torch capability detection
     try {
       const caps = cameraTrack && cameraTrack.getCapabilities ? cameraTrack.getCapabilities() : {};
@@ -52,10 +61,14 @@ async function startCamera() {
         if (torchBtn) {
           torchBtn.disabled = false;
           torchBtn.style.display = "block";
+          torchBtn.setAttribute('aria-pressed', 'false');
+          torchBtn.classList.remove('active');
         }
       } else if (torchBtn) {
         torchBtn.disabled = true;
         torchBtn.style.display = "none";
+        torchBtn.setAttribute('aria-pressed', 'false');
+        torchBtn.classList.remove('active');
       }
     } catch (e) {
       if (torchBtn) {
@@ -139,6 +152,14 @@ function stopCamera() {
   if (torchBtn) {
     torchBtn.disabled = true;
     torchBtn.style.display = "none";
+    torchBtn.setAttribute('aria-pressed', 'false');
+    torchBtn.classList.remove('active');
+  }
+  if (cameraBtn) {
+    cameraBtn.setAttribute('aria-pressed', 'false');
+    cameraBtn.classList.remove('active');
+    cameraBtn.textContent = 'Camera On';
+    cameraBtn.disabled = false;
   }
   if (videoEl && videoEl.srcObject) {
     try { videoEl.srcObject = null; } catch (e) {}
@@ -163,9 +184,7 @@ function showQRCode() {
   if (qrcodeWrapper) qrcodeWrapper.style.display = "flex";
 }
 
-// -------------------------------
 //  TORCH CONTROL
-// -------------------------------
 
 if (torchBtn) {
   torchBtn.addEventListener("click", async () => {
@@ -173,11 +192,41 @@ if (torchBtn) {
     torchOn = !torchOn;
     try {
       await cameraTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
+      // reflect state for accessibility and visuals
+      torchBtn.setAttribute('aria-pressed', String(torchOn));
+      if (torchOn) torchBtn.classList.add('active'); else torchBtn.classList.remove('active');
     } catch (e) {
+      // revert state on failure
+      torchOn = !torchOn;
+      torchBtn.setAttribute('aria-pressed', String(torchOn));
+      if (torchOn) torchBtn.classList.add('active'); else torchBtn.classList.remove('active');
       console.warn("Torch toggle failed:", e);
     }
   });
 }
+
+// Camera On/Off control
+if (cameraBtn) {
+  cameraBtn.addEventListener("click", async () => {
+    const isOn = cameraBtn.getAttribute('aria-pressed') === 'true';
+    if (isOn) {
+      // turn camera off
+      cameraBtn.setAttribute('aria-pressed', 'false');
+      cameraBtn.classList.remove('active');
+      cameraBtn.textContent = 'Camera On';
+      await stopCamera();
+      showQRCode();
+    } else {
+      // turn camera on
+      cameraBtn.disabled = true; // prevent double-click while starting
+      await initCameraOnLoad();
+      // initCameraOnLoad will set cameraBtn state when startCamera completes,
+      // but ensure button is enabled afterwards
+      if (cameraBtn) cameraBtn.disabled = false;
+    }
+  });
+}
+
 
 // -------------------------------
 //  INITIALIZATION HELPERS

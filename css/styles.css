@@ -1,41 +1,4 @@
 /* styles.css */
-/* === Camera View Styling === */
-
-#cameraWrapper {
-  width: 260px;      /* matches QR canvas size */
-  height: 260px;     /* keeps it square */
-  margin: 20px auto;
-  overflow: hidden;
-  background: #000;
-  margin: 20px auto;
-  display: none;
-}
-
-#cameraWrapper video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-#torchBtn {
-  display: none;
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 10;
-}
-
-
-/* === QR Code Container === */
-
-#qrcode {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 20px;
-}
-
 /* === SeedQR Page Layout === */
 
 body {
@@ -99,11 +62,6 @@ label {
   font-family: ui-monospace, monospace;
 }
 
-button {
-  padding: 8px 12px;
-  font-weight: 600;
-}
-
 pre {
   background: #f7f7f7;
   padding: 10px;
@@ -143,3 +101,63 @@ small {
 .label-row label {
   display: inline-block;
 }
+
+/* === Buttons === */
+
+button {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #bbb;
+  background: #f3f3f3;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.06s ease;
+  user-select: none;
+}
+
+button.active,
+button[aria-pressed="true"] {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.12);
+  background: #e6e6e6;
+  border-color: #999;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === Camera View Styling === */
+
+/* controls container */
+#cameraControls {
+  text-align: center;
+  margin-top: 8px;
+}
+
+#cameraWrapper {
+  width: 260px;      /* matches QR canvas size */
+  height: 260px;     /* keeps it square */
+  margin: 20px auto;
+  overflow: hidden;
+  display: none;
+}
+
+#cameraWrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* === QR Code Container === */
+
+#qrcode {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
