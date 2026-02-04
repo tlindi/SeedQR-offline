@@ -133,9 +133,15 @@ button:disabled {
 
 /* controls container */
 #cameraControls {
+  margin-top: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+}
+
+#cameraControls button {
+  width: 140px;
 }
 
 #cameraWrapper {
