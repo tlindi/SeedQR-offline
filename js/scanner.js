@@ -14,6 +14,9 @@ const qrcodeWrapper = document.getElementById("qrcode");
 const torchBtn = document.getElementById("torchBtn");
 const cameraBtn = document.getElementById("cameraBtn");
 
+// 🔥 Hide torch button by default BEFORE capability test 
+if (torchBtn) torchBtn.style.display = "none";
+
 // ZXing reader instance (requires libs/zxing-v0.19.1/index.min.js to be loaded first)
 let zxingReader = null;
 try { zxingReader = new ZXing.BrowserQRCodeReader(); } catch (e) { zxingReader = null; }
@@ -66,7 +69,6 @@ async function startCamera() {
         }
       } else if (torchBtn) {
         torchBtn.disabled = true;
-        torchBtn.style.display = "none";
         torchBtn.setAttribute('aria-pressed', 'false');
         torchBtn.classList.remove('active');
       }
