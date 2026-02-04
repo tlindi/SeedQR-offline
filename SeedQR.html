@@ -69,8 +69,7 @@
   </div>
 
   <!-- Results Card -->
-  <!-- <div id="results" style="margin-top:16px; text-align:center; display:flex; gap:20px; flex-wrap:wrap;"> -->
-  <div class="card" id="results" style="display:none;">
+  <div class="card" id="resultsCard" style="display:none;">
     <!-- QR and Seedstring Card -->
     <div class="card">
       <div style="margin-top:2px; text-align:center;">
@@ -113,20 +112,33 @@
       </div>
 
       <!-- Payload Card -->
-    <div class="card" id="payloadCard">
+      <div class="card" id="payloadCard">
         <label>Decimal word indices:</label>
         <pre id="wordIndices"></pre>
-    <label>Payload (Python bytes, SeedQR, hex and 132 bits):</label>
-    <pre id="pbytes"></pre>
-    <pre id="hex"></pre>
-    <pre id="bytes"></pre>
-    <pre id="bits"></pre>
+        <label>Payload (Python bytes, SeedQR, hex and 132 bits):</label>
+        <pre id="pbytes"></pre>
+        <pre id="hex"></pre>
+        <pre id="bytes"></pre>
+        <pre id="bits"></pre>
       </div>
    </div>    
 </div>
 
+<!-- scripts -->
+
+<!-- set Card visibility helper-->
+<script>
+  function setCardVisible(id, visible) {
+    const name = id.endsWith('Card') ? id : id + 'Card';
+    const el = document.getElementById(name);
+    if (!el) return;
+    el.style.display = visible ? 'block' : 'none';
+  }
+  function hideCard(id){ setCardVisible(id, false); }
+  function showCard(id){ setCardVisible(id, true); }
+</script>
+
 <!-- external -->
-<!-- <script src="qrcode.min.js"></script> -->
 <script src="libs/crypto-js.min.js"></script>
 <script src="libs/jsQR.js"></script>
 <script src="libs/qrcodegen-v1.8.0-es5.js"></script>
@@ -138,7 +150,7 @@
 <script src="js/scanner.js"></script>
 <script src="WORDLIST.js"></script>
 <script src="render.js"></script>
-<script src="common.js"></script>
+<script src="js/common.js"></script>
 <script src="js/input.js"></script>
 <script src="js/helpers.js"></script>
 <script src="seedqr.js"></script>
@@ -150,28 +162,54 @@
 
 <script>
 
+
+// local UI and input related DEBUG functions, in addition to js/debug.js
+function applyDebugMode() {
+  const banner = document.getElementById('debugBanner');
+  if (!banner) return;
+
+  // banner text for debug variants
+  if (debug === "electrum") {
+    banner.textContent = "electrum debug mode active, using test wordlist";
+  } else if (debug === "electrum_2fa") {
+    banner.textContent = "electrum_2fa debug mode active, using test wordlist";
+  } else if (debug === "bip39") {
+    banner.textContent = "BIP39 debug mode active, using test wordlist";
+  } else {
+    banner.textContent = `Debug mode active: ${debug}`;
+  }
+  banner.style.display = "block";
+
+  // auto-fill debug words if provided
+  if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
+    const els = document.querySelectorAll('#words input');
+    els.forEach((inp, i) => { inp.value = window.DEBUG_WORDS[i] || ""; });
+    if (typeof validateInputs === 'function') validateInputs();
+    if (typeof updateResults === 'function') updateResults();
+
+    showCard('results');
+
+    // enable/disable clear button based on content
+    const clearBtn = document.getElementById('clearBtn');
+    const anyFilled = Array.from(els).some(i => i.value.trim() !== "");
+    if (clearBtn) clearBtn.disabled = !anyFilled;
+  }
+}
+
 // MAIN APPLICATION loop
 window.addEventListener('DOMContentLoaded', () => {
   const banner = document.getElementById('debugBanner');
   const payloadCard = document.getElementById('payloadCard');
 
   if (DEBUG) {
-    // Show banner text depending on mode
-    if (debug === "electrum") {
-      banner.textContent = "electrum debug mode active, using test wordlist";
-    } else if (debug === "electrum_2fa") {
-      banner.textContent = "electrum_2fa debug mode active, using test wordlist";
-    } else if (debug === "bip39") {
-      banner.textContent = "BIP39 debug mode active, using test wordlist";
-    } else {
-      banner.textContent = `Debug mode active: ${debug}`;
-    }
-    banner.style.display = "block";
+    applyDebugMode();
   } else {
-    banner.style.display = "none"; // hide in production
-    // DO NOT hide payloadCard anymore
-    // if (payloadCard) payloadCard.style.display = 'none';
+    if (banner) banner.style.display = "none";
   }
+
+  // default: ensure clear is disabled until user types
+  const clearBtn = document.getElementById('clearBtn');
+  if (clearBtn) clearBtn.disabled = true;
 
   // Build the inputs
   makeInputs();
@@ -190,8 +228,7 @@ window.addEventListener('DOMContentLoaded', () => {
     validateInputs();
     updateResults();
 
-    const results = document.getElementById('results');
-    if (results) results.style.display = 'block';
+    showCard('results')
     
     // Set Clear button enabled/disabled based on whether any seed word is filled
     const clearBtn = document.getElementById('clearBtn');
@@ -201,7 +238,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// CLEAR BUTTON
+// CLEAR BUTTON is page REFRESH
 document.getElementById('clearBtn').addEventListener('click', () => {
   window.location.reload();
 });

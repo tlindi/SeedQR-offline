@@ -50,8 +50,8 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
         try {
           window.handleDecodedResult(result);
 
-          const camCard = document.getElementById('cameraCard');
-          if (camCard) camCard.style.display = 'none';
+          hideCard('camera');
+          hideCard('upload');
 
           return;
         } catch (e) {
@@ -74,9 +74,8 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
 
       if (typeof updateResults === 'function') updateResults();
 
-      const camCard = document.getElementById('cameraCard');
-      if (camCard) camCard.style.display = 'none';
-
+      hideCard('upload');
+      
       return;
     }
 
@@ -84,6 +83,7 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
     if (typeof window.handleDecodedResult === 'function') {
       try {
         window.handleDecodedResult({ type: 'camera', bytes: input, source: 'upload' });
+        hideCard('upload');
         return;
       } catch (e) {
         console.error('handleDecodedResult fallback error', e);

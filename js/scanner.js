@@ -14,7 +14,7 @@ const qrcodeWrapper = document.getElementById("qrcode");
 const torchBtn = document.getElementById("torchBtn");
 const cameraBtn = document.getElementById("cameraBtn");
 
-// 🔥 Hide torch button by default BEFORE capability test 
+// Hide torch button by default BEFORE capability test 
 if (torchBtn) torchBtn.style.display = "none";
 
 // ZXing reader instance (requires libs/zxing-v0.19.1/index.min.js to be loaded first)
@@ -125,8 +125,7 @@ async function startCamera() {
         }
 
         // Hide camera card after successful QR decode (always run)
-        const cameraCard = document.getElementById('cameraCard');
-        if (cameraCard) cameraCard.style.display = 'none';
+        setCardVisible('cameraCard', false);
 
         // fallback only if handler missing
         if (typeof window.handleDecodedBytes !== 'function') {
@@ -173,14 +172,7 @@ function stopCamera() {
 
   // clear the one-shot lock
   window._scanLocked = false;
-
-  // HIDE CAMERA CARD ALWAYS WHEN CAMERA STOPS
-  if (cameraWrapper) cameraWrapper.style.display = "none";
-  if (videoEl) videoEl.style.display = "none";
-  const cameraCard = document.getElementById('cameraCard');
-  if (cameraCard) cameraCard.style.display = 'none';
 }
-
 
 // -------------------------------
 //  VISIBILITY TOGGLES
@@ -235,7 +227,6 @@ if (torchBtn) {
   });
 }
 
-
 // Camera On/Off control
 if (cameraBtn) {
   cameraBtn.addEventListener("click", async () => {
@@ -252,27 +243,24 @@ if (cameraBtn) {
       const anyWordFilled = Array.from(document.querySelectorAll('#words input'))
         .some(i => i.value.trim() !== '');
 
-      const results = document.getElementById('results');
-      const uploadCard = document.getElementById('uploadCard');
+      hideCard('upload');
 
       if (!anyWordFilled) {
         // No QR detected → hide results, show upload
-        if (results) results.style.display = 'none';
-        if (uploadCard) uploadCard.style.display = 'block';
+        hideCard('results');
+        showCard('upload');
       } else {
         // QR detected → keep results visible, keep upload hidden
-        if (uploadCard) uploadCard.style.display = 'none';
+        hideCard('upload');
+        showCard('results');
       }
     } else {
       // turn camera on
       cameraBtn.disabled = true; // prevent double-click while starting
       
-      const resultsEl = document.getElementById('results');
-      if (resultsEl) resultsEl.style.display = 'block';
-
       // HIDE UPLOAD CARD During scanning
-      const uploadCard = document.getElementById('uploadCard');
-      if (uploadCard) uploadCard.style.display = 'none';
+      hideCard('upload');
+      showCard('results')
 
       await initCameraOnLoad();
       // initCameraOnLoad will set cameraBtn state when startCamera completes,
