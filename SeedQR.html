@@ -40,17 +40,17 @@
     </div>
   </div>
 
-    <!-- Upload card -->
-    <div class="card" style="text-align:center;">
+  <!-- Upload Card -->
+  <div class="card" style="text-align:center;">
     <div id="fileName" style="margin-top:8px; font-family:ui-monospace;"></div>
     <p id="qrHint" style="margin-top:8px; color:#666; font-size:14px;">
-      Select a PNG or JPG containing a SeedQR. It will be decoded into words automatically.
+      Upload PNG of JPG SeedQR image to decode. It will be decoded into words automatically.
     </p>
 
     <!-- Upload button -->
     <label for="qrUpload" 
       style="display:inline-block; padding:8px 12px; background:#eee; border:1px solid #ccc; border-radius:4px; cursor:pointer; font-weight:600;">
-      Upload QR image to decode
+      Upload
     </label>
     <input type="file" id="qrUpload" accept="image/*" style="display:none;">
 
@@ -59,36 +59,49 @@
     <div id="qrError" style="margin-top:10px; font-family:ui-monospace, monospace; white-space:pre-wrap; color:#333;"></div>
   </div>
 
+  <!-- Camera Controls Card -->
+  <div class="card" style="text-align:center;">
+    <p style="margin-top:8px; color:#666; font-size:14px;">
+      Enable camera to scan SeedQR.
+    </p>
+
+    <div id="cameraControls">
+      <button id="cameraBtn" aria-pressed="false">Scan QR</button>
+      <button id="torchBtn" aria-pressed="false" disabled style="display:none;">Torch</button>
+    </div>
+  </div>
+
   <!-- Results Card -->
   <!-- <div id="results" style="margin-top:16px; text-align:center; display:flex; gap:20px; flex-wrap:wrap;"> -->
   <div class="card" id="results" style="display:none;">
     <!-- QR and Seedstring Card -->
     <div class="card">
-      <div style="margin-top:2px; display:flex; gap:2px; align-items:center; justify-content:center;">
-        <label>Wallet type:</label>
-      <pre id="version"></pre>
-      </div>
       <div style="margin-top:2px; display:flex; gap:5px; align-items:center; justify-content:center;">
         <label>Compact SeedQR (qrcode v1-LOW):</label>
-      </div>
-
-      <div id="cameraControls"> 
-        <button id="cameraBtn" aria-pressed="false">Camera Scanner</button>
-        <button id="torchBtn" aria-pressed="false" disabled style="display:none;">Torch</button>
+        <p id="qrHint" style="margin-top:8px; color:#666; font-size:14px;">
+          Print and manually transcribe on a 21×21 template.
+        </p>
       </div>
 
       <div id="cameraWrapper">
         <video id="video" playsinline></video>
       </div>
 
-      <div id="qrcode" style="margin-top:20px; display:flex; gap:15px; align-items:center; justify-content:center;"></div>
+      <div id="qrcode">
+        style="margin-top:20px;
+        display:flex; gap:15px;
+        align-items:center;
+        justify-content:center;">
+      </div>
+
+      <div style="margin-top:2px; display:flex; gap:2px; align-items:center; justify-content:center;">
+        <label>Wallet type:</label>
+      <pre id="version"></pre>
+      </div>
 
       <div style="margin-top:10px; text-align:center;">
         <label>Seed words (string):</label>
         <pre id="wordString" style="white-space:pre-wrap;"></pre>
-      </div>
-      <div style="margin-top:20px; display:flex; gap:5px; align-items:center; justify-content:center;">
-        <small>Print and manually transcribe on a 21×21 template.</small>
       </div>
     </div>
 
