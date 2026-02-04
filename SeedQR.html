@@ -57,7 +57,7 @@
   </div>
 
   <!-- Camera Controls Card -->
-  <div class="card" style="text-align:center;">
+  <div class="card" id="cameraCard" style="text-align:center;">
     <p style="margin-top:8px; color:#666; font-size:14px;">
       Enable camera to scan SeedQR.
     </p>
@@ -170,8 +170,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // DO NOT hide payloadCard anymore
     // if (payloadCard) payloadCard.style.display = 'none';
   }
-
-  document.getElementById('results').style.display = 'block';
 
   // Build the inputs
   makeInputs();

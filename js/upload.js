@@ -49,6 +49,10 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
       if (typeof window.handleDecodedResult === 'function') {
         try {
           window.handleDecodedResult(result);
+
+          const camCard = document.getElementById('cameraCard');
+          if (camCard) camCard.style.display = 'none';
+
           return;
         } catch (e) {
           console.error('handleDecodedResult error', e);
@@ -69,6 +73,10 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
         : { type: "seedqr",   words, bytes: result.bytes, version: result.version };
 
       if (typeof updateResults === 'function') updateResults();
+
+      const camCard = document.getElementById('cameraCard');
+      if (camCard) camCard.style.display = 'none';
+
       return;
     }
 

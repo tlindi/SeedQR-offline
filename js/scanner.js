@@ -238,6 +238,9 @@ if (cameraBtn) {
     } else {
       // turn camera on
       cameraBtn.disabled = true; // prevent double-click while starting
+      
+      document.getElementById('results').style.display = 'block';
+
       await initCameraOnLoad();
       // initCameraOnLoad will set cameraBtn state when startCamera completes,
       // but ensure button is enabled afterwards
