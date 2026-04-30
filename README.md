@@ -5,7 +5,7 @@ Offline generate and decode SeedQR style 12-word phrases of Electrum and BIP39 o
 Complies with: https://github.com/SeedSigner/seedsigner/blob/dev/docs/seed_qr/README.md
 
 ## ToDo
-- [ ] Test and verify electrum seed functions
+- [ ] Fix verify electrum seed functions
 
 ## Done
 - [x] Feature: Mobile phone camera support v0.2
