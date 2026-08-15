@@ -1,6 +1,6 @@
+# Updated build-bundle workflow: only upload/commit when bundle exists.
 name: Build single HTML bundle
 
-# Trigger on manual dispatch and pushes to the branch used for this change
 on:
   workflow_dispatch:
   push:
@@ -8,7 +8,7 @@ on:
       - bundle-single-html
 
 permissions:
-  contents: write  # needed if the workflow commits the output back to the repo
+  contents: write
 
 jobs:
   build:
@@ -16,6 +16,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # ensure we can push back if needed
+          persist-credentials: true
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -23,22 +26,39 @@ jobs:
           python-version: "3.x"
 
       - name: Run bundler
+        id: run_bundler
         run: |
-          python3 scripts/build_single_html.py -i SeedQR.html -o dists/SeedQR.bundle.html
+          set -e
+          python3 scripts/build_bundle_html.py -i SeedQR.html -o dists/SeedQR.bundle.html
+
+      - name: Check bundle exists
+        id: check_bundle
+        run: |
+          if [ -f "dists/SeedQR.bundle.html" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload bundle artifact
+        if: steps.check_bundle.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: SeedQR-bundle
           path: dists/SeedQR.bundle.html
 
-      # Optional: commit the bundled file back to the branch (uncomment if desired)
+      # Optional: commit the bundled file back to the branch using git (avoids Node-based action)
       - name: Commit bundled file back to branch (optional)
-        if: always()
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: github-actions
-          author_email: github-actions@users.noreply.github.com
-          message: "Add bundled SeedQR HTML (generated)"
-          add: "dists/SeedQR.bundle.html"
-          push: true
+        if: steps.check_bundle.outputs.exists == 'true'
+        run: |
+          set -e
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add dists/SeedQR.bundle.html
+          # Only commit if there are changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add bundled SeedQR HTML (generated)"
+            git push
+          fi
