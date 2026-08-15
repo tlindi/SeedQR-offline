@@ -1,4 +1,7 @@
 // upload.js (refactored to use centralized handleDecodedResult)
+document.getElementById('uploadBtn').addEventListener('click', () => {
+  document.getElementById('qrUpload').click();
+});
 
 document.getElementById('qrUpload').addEventListener('change', async (event) => {
   const file = event.target.files[0];
@@ -46,6 +49,10 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
       if (typeof window.handleDecodedResult === 'function') {
         try {
           window.handleDecodedResult(result);
+
+          hideCard('camera');
+          hideCard('upload');
+
           return;
         } catch (e) {
           console.error('handleDecodedResult error', e);
@@ -66,6 +73,9 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
         : { type: "seedqr",   words, bytes: result.bytes, version: result.version };
 
       if (typeof updateResults === 'function') updateResults();
+
+      hideCard('upload');
+      
       return;
     }
 
@@ -73,6 +83,7 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
     if (typeof window.handleDecodedResult === 'function') {
       try {
         window.handleDecodedResult({ type: 'camera', bytes: input, source: 'upload' });
+        hideCard('upload');
         return;
       } catch (e) {
         console.error('handleDecodedResult fallback error', e);
@@ -96,7 +107,6 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   const fileInput   = document.getElementById('qrUpload');
   const fileLabel   = document.querySelector('label[for="qrUpload"]');
   const fileNameEl  = document.getElementById('fileName');
-  const getBtn      = document.getElementById('make');
   const msgBox      = document.getElementById('qrUploadMsg');
   const errorBox    = document.getElementById('qrError');
   const hint        = document.getElementById('qrHint');
@@ -113,7 +123,6 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   if (hint) hint.style.display = "block";
   if (msgBox) msgBox.textContent = "";
   if (errorBox) errorBox.textContent = "";
-  if (window.debug && getBtn) getBtn.style.display = 'inline-block';
   
   // Clear word inputs and notify listeners so validators run
   document.querySelectorAll('#words input').forEach(i => { 

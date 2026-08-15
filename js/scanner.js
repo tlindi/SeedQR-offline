@@ -12,6 +12,10 @@ const videoEl = document.getElementById("video");
 const cameraWrapper = document.getElementById("cameraWrapper");
 const qrcodeWrapper = document.getElementById("qrcode");
 const torchBtn = document.getElementById("torchBtn");
+const cameraBtn = document.getElementById("cameraBtn");
+
+// Hide torch button by default BEFORE capability test 
+if (torchBtn) torchBtn.style.display = "none";
 
 // ZXing reader instance (requires libs/zxing-v0.19.1/index.min.js to be loaded first)
 let zxingReader = null;
@@ -45,6 +49,14 @@ async function startCamera() {
 
     cameraTrack = cameraStream.getVideoTracks()[0];
 
+    // enable camera control and reflect active state
+    if (cameraBtn) {
+      cameraBtn.disabled = false;
+      cameraBtn.setAttribute('aria-pressed', 'true');
+      cameraBtn.classList.add('active');
+      cameraBtn.textContent = 'End Scan';
+    }
+
     // Torch capability detection
     try {
       const caps = cameraTrack && cameraTrack.getCapabilities ? cameraTrack.getCapabilities() : {};
@@ -52,10 +64,13 @@ async function startCamera() {
         if (torchBtn) {
           torchBtn.disabled = false;
           torchBtn.style.display = "block";
+          torchBtn.setAttribute('aria-pressed', 'false');
+          torchBtn.classList.remove('active');
         }
       } else if (torchBtn) {
         torchBtn.disabled = true;
-        torchBtn.style.display = "none";
+        torchBtn.setAttribute('aria-pressed', 'false');
+        torchBtn.classList.remove('active');
       }
     } catch (e) {
       if (torchBtn) {
@@ -88,7 +103,6 @@ async function startCamera() {
           payload = null;
         }
 
-
         if (!payload) {
           console.error('No payload produced from result');
           return;
@@ -100,29 +114,33 @@ async function startCamera() {
 
         console.log('ZXing detected QR', { payloadLength: payload.length });
 
-      // inside ZXing callback after payload extraction and locking
-    if (typeof window.handleDecodedBytes === 'function') {
-      try {
-        const p = window.handleDecodedBytes(payload);
-        if (p && typeof p.catch === 'function') p.catch(e => console.error('handleDecodedBytes rejected', e));
-      } catch (e) {
-        console.error('handleDecodedBytes sync error', e);
-    }
-    } else {
-      // legacy fallback (temporary): store raw bytes and update UI
-      window.lastUpload = { type: 'camera', bytes: payload };
-      if (typeof updateResults === 'function') {
-        try { updateResults(); } catch (e) { console.error('updateResults error', e); }
-      } else {
-        console.log('Decoded QR (camera bytes) fallback stored', { payloadLength: payload.length });
-    }
-  }
+        // inside ZXing callback after payload extraction and locking
+        if (typeof window.handleDecodedBytes === 'function') {
+          try {
+            const p = window.handleDecodedBytes(payload);
+            if (p && typeof p.catch === 'function') p.catch(e => console.error('handleDecodedBytes rejected', e));
+          } catch (e) {
+            console.error('handleDecodedBytes sync error', e);
+          }
+        }
 
+        // Hide camera card after successful QR decode (always run)
+        setCardVisible('cameraCard', false);
+
+        // fallback only if handler missing
+        if (typeof window.handleDecodedBytes !== 'function') {
+          // legacy fallback (temporary): store raw bytes and update UI
+          window.lastUpload = { type: 'camera', bytes: payload };
+          if (typeof updateResults === 'function') {
+            try { updateResults(); } catch (e) { console.error('updateResults error', e); }
+          } else {
+            console.log('Decoded QR (camera bytes) fallback stored', { payloadLength: payload.length });
+          }
+        }
       });
     } else {
       console.warn('ZXing reader not available; camera will start but no continuous decode will run.');
     }
-
   } catch (err) {
     console.error("Camera start failed:", err);
   }
@@ -139,11 +157,20 @@ function stopCamera() {
   if (torchBtn) {
     torchBtn.disabled = true;
     torchBtn.style.display = "none";
+    torchBtn.setAttribute('aria-pressed', 'false');
+    torchBtn.classList.remove('active');
+  }
+  if (cameraBtn) {
+    cameraBtn.setAttribute('aria-pressed', 'false');
+    cameraBtn.classList.remove('active');
+    cameraBtn.textContent = 'Scan';
+    cameraBtn.disabled = false;
   }
   if (videoEl && videoEl.srcObject) {
     try { videoEl.srcObject = null; } catch (e) {}
   }
-  // clear the one-shot lock so future camera starts can scan
+
+  // clear the one-shot lock
   window._scanLocked = false;
 }
 
@@ -163,9 +190,7 @@ function showQRCode() {
   if (qrcodeWrapper) qrcodeWrapper.style.display = "flex";
 }
 
-// -------------------------------
 //  TORCH CONTROL
-// -------------------------------
 
 if (torchBtn) {
   torchBtn.addEventListener("click", async () => {
@@ -173,8 +198,74 @@ if (torchBtn) {
     torchOn = !torchOn;
     try {
       await cameraTrack.applyConstraints({ advanced: [{ torch: torchOn }] });
+      // reflect state for accessibility and visuals
+      torchBtn.setAttribute('aria-pressed', String(torchOn));      
+
+      if (torchOn) {
+        torchBtn.classList.add('active');
+        torchBtn.textContent = '* Torch *';   // ← INSERT HERE (torch ON)
+      } else {
+        torchBtn.classList.remove('active');
+        torchBtn.textContent = 'Torch';       // ← INSERT HERE (torch OFF)
+      }
+
     } catch (e) {
+      // revert state on failure
+      torchOn = !torchOn;
+      torchBtn.setAttribute('aria-pressed', String(torchOn));
+
+      if (torchOn) {
+        torchBtn.classList.add('active');
+        torchBtn.textContent = '* Torch *';   // ← SAME INSERT HERE
+      } else {
+        torchBtn.classList.remove('active');
+        torchBtn.textContent = 'Torch';       // ← SAME INSERT HERE
+      }
+
       console.warn("Torch toggle failed:", e);
+    }
+  });
+}
+
+// Camera On/Off control
+if (cameraBtn) {
+  cameraBtn.addEventListener("click", async () => {
+    const isOn = cameraBtn.getAttribute('aria-pressed') === 'true';
+    if (isOn) {
+      cameraBtn.setAttribute('aria-pressed', 'false');
+      cameraBtn.classList.remove('active');
+      cameraBtn.textContent = 'Scan';
+
+      await stopCamera();
+      showQRCode();   // resets UI
+
+      // Check if any seed words were decoded
+      const anyWordFilled = Array.from(document.querySelectorAll('#words input'))
+        .some(i => i.value.trim() !== '');
+
+      hideCard('upload');
+
+      if (!anyWordFilled) {
+        // No QR detected → hide results, show upload
+        hideCard('results');
+        showCard('upload');
+      } else {
+        // QR detected → keep results visible, keep upload hidden
+        hideCard('upload');
+        showCard('results');
+      }
+    } else {
+      // turn camera on
+      cameraBtn.disabled = true; // prevent double-click while starting
+      
+      // HIDE UPLOAD CARD During scanning
+      hideCard('upload');
+      showCard('results')
+
+      await initCameraOnLoad();
+      // initCameraOnLoad will set cameraBtn state when startCamera completes,
+      // but ensure button is enabled afterwards
+      if (cameraBtn) cameraBtn.disabled = false;
     }
   });
 }
@@ -197,7 +288,6 @@ async function resetCameraOnClear() {
   // ensure latch cleared before restarting
   window._scanLocked = false;
   showCamera();
-  await startCamera();
 }
 
 // Expose public API on window for non-module pages

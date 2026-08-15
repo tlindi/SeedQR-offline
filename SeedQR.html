@@ -18,9 +18,9 @@
 
   <h2>Compact SeedQR-offline for BIP39 and electrum 12 word seeds</h2>
   <p>
-    v0.2 by tlindi (C)20260201.2225
+    v0.2.1 by tlindi & Copilot (C)20260815
   </p>
-  <h1>Debug, add to URL: ?debug=bip39, =electrum or =electrum_2fa </h1>
+  <h1>DEBUG HELP: Append to URL ?debug=bip39, ?debug==electrum or ?debug==electrum_2fa </h1>
   <p>
     Write your 12 seed words or paste all 12 words at once, they’ll be split automatically.</br>
   (consider copy-paste non-secure)</br>
@@ -35,24 +35,20 @@
     </div>
 
     <div class="words" id="words"></div>
-    <div style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
-    <button id="make" style="display:none;">GetQR</button>
-    <button id="clearBtn">Clear</button>
+    <div style="margin-top:10px; gap:10px; text-align:center; justify-content:center;">
+      <button id="clearBtn">Clear</button>
     </div>
   </div>
 
-    <!-- Upload card -->
-    <div class="card" style="text-align:center;">
+  <!-- Upload Card -->
+  <div class="card" id="uploadCard" style="text-align:center;">
     <div id="fileName" style="margin-top:8px; font-family:ui-monospace;"></div>
     <p id="qrHint" style="margin-top:8px; color:#666; font-size:14px;">
-      Select a PNG or JPG containing a SeedQR. It will be decoded into words automatically.
+      Upload PNG of JPG SeedQR image to decode. It will be decoded into words automatically.
     </p>
 
     <!-- Upload button -->
-    <label for="qrUpload" 
-      style="display:inline-block; padding:8px 12px; background:#eee; border:1px solid #ccc; border-radius:4px; cursor:pointer; font-weight:600;">
-      Upload QR image to decode
-    </label>
+    <button id="uploadBtn">Upload</button>
     <input type="file" id="qrUpload" accept="image/*" style="display:none;">
 
     <!-- Filename -->
@@ -60,33 +56,53 @@
     <div id="qrError" style="margin-top:10px; font-family:ui-monospace, monospace; white-space:pre-wrap; color:#333;"></div>
   </div>
 
+  <!-- Camera Controls Card -->
+  <div class="card" id="cameraCard" style="text-align:center;">
+    <p style="margin-top:8px; color:#666; font-size:14px;">
+      Enable camera to scan SeedQR.
+    </p>
+
+    <div id="cameraControls">
+      <button id="cameraBtn" aria-pressed="false">Scan</button>
+      <button id="torchBtn" aria-pressed="false" disabled style="display:none;">Torch</button>
+    </div>
+  </div>
+
   <!-- Results Card -->
-  <!-- <div id="results" style="margin-top:16px; text-align:center; display:flex; gap:20px; flex-wrap:wrap;"> -->
-  <div class="card" id="results" style="display:none;">
+  <div class="card" id="resultsCard" style="display:none;">
     <!-- QR and Seedstring Card -->
     <div class="card">
-      <div style="margin-top:2px; display:flex; gap:2px; align-items:center; justify-content:center;">
-      <label>Wallet type:</label>
-      <pre id="version"></pre>
-      </div>
-      <div style="margin-top:2px; display:flex; gap:5px; align-items:center; justify-content:center;">
-      <label>Compact SeedQR (qrcode v1-LOW):</label>
+      <div style="margin-top:2px; text-align:center;">
+        <label>Compact SeedQR (qrcode v1-LOW)</label>
+        <p id="qrHint" style="margin-top:4px; color:#666; font-size:14px;">
+          Print and manually transcribe on a 21×21 template.
+        </p>
       </div>
 
-      <!-- Camera view + QR view share this area -->
       <div id="cameraWrapper">
         <video id="video" playsinline></video>
-        <button id="torchBtn" disabled>Toggle Torch</button>
       </div>
 
-      <div id="qrcode" style="margin-top:20px; display:flex; gap:15px; align-items:center; justify-content:center;"></div>
+      <div id="qrcode"
+        style="margin-top:20px;
+        display:flex; gap:15px;
+        align-items:center;
+        justify-content:center;">
+      </div>
+
+      <div 
+        style="margin-top:2px;
+        display:flex;
+        gap:2px;
+        align-items:center;
+        justify-content:center;">
+        <label>Wallet type:</label>
+        <pre id="version"></pre>
+      </div>
 
       <div style="margin-top:10px; text-align:center;">
         <label>Seed words (string):</label>
         <pre id="wordString" style="white-space:pre-wrap;"></pre>
-      </div>
-      <div style="margin-top:20px; display:flex; gap:5px; align-items:center; justify-content:center;">
-        <small>Print and manually transcribe on a 21×21 template.</small>
       </div>
     </div>
 
@@ -96,20 +112,33 @@
       </div>
 
       <!-- Payload Card -->
-    <div class="card" id="payloadCard">
+      <div class="card" id="payloadCard">
         <label>Decimal word indices:</label>
         <pre id="wordIndices"></pre>
-    <label>Payload (Python bytes, SeedQR, hex and 132 bits):</label>
-    <pre id="pbytes"></pre>
-    <pre id="hex"></pre>
-    <pre id="bytes"></pre>
-    <pre id="bits"></pre>
+        <label>Payload (Python bytes, SeedQR, hex and 132 bits):</label>
+        <pre id="pbytes"></pre>
+        <pre id="hex"></pre>
+        <pre id="bytes"></pre>
+        <pre id="bits"></pre>
       </div>
    </div>    
 </div>
 
+<!-- scripts -->
+
+<!-- set Card visibility helper-->
+<script>
+  function setCardVisible(id, visible) {
+    const name = id.endsWith('Card') ? id : id + 'Card';
+    const el = document.getElementById(name);
+    if (!el) return;
+    el.style.display = visible ? 'block' : 'none';
+  }
+  function hideCard(id){ setCardVisible(id, false); }
+  function showCard(id){ setCardVisible(id, true); }
+</script>
+
 <!-- external -->
-<!-- <script src="qrcode.min.js"></script> -->
 <script src="libs/crypto-js.min.js"></script>
 <script src="libs/jsQR.js"></script>
 <script src="libs/qrcodegen-v1.8.0-es5.js"></script>
@@ -121,40 +150,66 @@
 <script src="js/scanner.js"></script>
 <script src="WORDLIST.js"></script>
 <script src="render.js"></script>
-<script src="common.js"></script>
-<script src="input.js"></script>
+<script src="js/common.js"></script>
+<script src="js/input.js"></script>
 <script src="js/helpers.js"></script>
 <script src="seedqr.js"></script>
 <script src="bip39.js"></script>
 <script src="electrum.js"></script>
 <script src="js/decoder.js"></script>
-<script src="status.js"></script>
+<script src="js/status.js"></script>
 <script src="qrread.js"></script>
 
 <script>
+
+
+// local UI and input related DEBUG functions, in addition to js/debug.js
+function applyDebugMode() {
+  const banner = document.getElementById('debugBanner');
+  if (!banner) return;
+
+  // banner text for debug variants
+  if (debug === "electrum") {
+    banner.textContent = "electrum debug mode active, using test wordlist";
+  } else if (debug === "electrum_2fa") {
+    banner.textContent = "electrum_2fa debug mode active, using test wordlist";
+  } else if (debug === "bip39") {
+    banner.textContent = "BIP39 debug mode active, using test wordlist";
+  } else {
+    banner.textContent = `Debug mode active: ${debug}`;
+  }
+  banner.style.display = "block";
+
+  // auto-fill debug words if provided
+  if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
+    const els = document.querySelectorAll('#words input');
+    els.forEach((inp, i) => { inp.value = window.DEBUG_WORDS[i] || ""; });
+    if (typeof validateInputs === 'function') validateInputs();
+    if (typeof updateResults === 'function') updateResults();
+
+    showCard('results');
+
+    // enable/disable clear button based on content
+    const clearBtn = document.getElementById('clearBtn');
+    const anyFilled = Array.from(els).some(i => i.value.trim() !== "");
+    if (clearBtn) clearBtn.disabled = !anyFilled;
+  }
+}
+
+// MAIN APPLICATION loop
 window.addEventListener('DOMContentLoaded', () => {
   const banner = document.getElementById('debugBanner');
   const payloadCard = document.getElementById('payloadCard');
 
   if (DEBUG) {
-    // Show banner text depending on mode
-    if (debug === "electrum") {
-      banner.textContent = "electrum debug mode active, using test wordlist";
-    } else if (debug === "electrum_2fa") {
-      banner.textContent = "electrum_2fa debug mode active, using test wordlist";
-    } else if (debug === "bip39") {
-      banner.textContent = "BIP39 debug mode active, using test wordlist";
-    } else {
-      banner.textContent = `Debug mode active: ${debug}`;
-    }
-    banner.style.display = "block";
+    applyDebugMode();
   } else {
-    banner.style.display = "none"; // hide in production
-    // DO NOT hide payloadCard anymore
-    // if (payloadCard) payloadCard.style.display = 'none';
+    if (banner) banner.style.display = "none";
   }
 
-  document.getElementById('results').style.display = 'block';
+  // default: ensure clear is disabled until user types
+  const clearBtn = document.getElementById('clearBtn');
+  if (clearBtn) clearBtn.disabled = true;
 
   // Build the inputs
   makeInputs();
@@ -162,64 +217,30 @@ window.addEventListener('DOMContentLoaded', () => {
   attachPasteHandler();
   validateInputs();
 
-  if (DEBUG) {
-    const getBtn = document.getElementById('make');
-    getBtn.style.display = 'inline-block';
-    getBtn.addEventListener('click', updateResults);
-    statusCard.style.display = 'block';
-  }
-  if (window.initCameraOnLoad) { 
-    window.initCameraOnLoad(); 
+  // WHEN DEBUG MODE Auto-fill debug words after inputs exist
+  if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
+    const els = document.querySelectorAll('#words input');
+    els.forEach((inp, i) => {
+      inp.value = window.DEBUG_WORDS[i] || "";
+    });
+
+    // Trigger normal pipeline
+    validateInputs();
+    updateResults();
+
+    showCard('results')
+    
+    // Set Clear button enabled/disabled based on whether any seed word is filled
+    const clearBtn = document.getElementById('clearBtn');
+    const inputs = document.querySelectorAll('#words input');
+    const anyFilled = Array.from(inputs).some(i => i.value.trim() !== "");
+    clearBtn.disabled = !anyFilled;
   }
 });
 
-// CLEAR BUTTON
+// CLEAR BUTTON is page REFRESH
 document.getElementById('clearBtn').addEventListener('click', () => {
-  // wipe seed inputs
-  const els = document.querySelectorAll('#words input');
-  els.forEach((inp, i) => {
-    if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
-      inp.value = window.DEBUG_WORDS[i] || "";
-    } else {
-      inp.value = "";
-    }
-  });
-
-  // wipe results
-  const statusEl = document.getElementById('status');
-  if (statusEl) statusEl.textContent = "";
-
-  const hexEl = document.getElementById('hex');
-  if (hexEl) hexEl.textContent = "";
-
-  const bitsEl = document.getElementById('bits');
-  if (bitsEl) bitsEl.textContent = "";
-
-  const versionEl = document.getElementById('version');
-  if (versionEl) versionEl.textContent = "";
-
-  const wordStringEl = document.getElementById('wordString');
-  if (wordStringEl) wordStringEl.textContent = "";
-
-  const qrEl = document.getElementById('qrcode');
-  if (qrEl) qrEl.innerHTML = "";
-
-  const resultsCard = document.getElementById('results');
-  if (resultsCard) resultsCard.style.display = 'none';
-
-  const qrErrorEl = document.getElementById('qrError');
-  if (qrErrorEl) qrErrorEl.textContent = "";
-
-  // clear file input
-  const fileInput = document.getElementById('qrUpload');
-  if (fileInput) fileInput.value = "";
-
-  const msgBox = document.getElementById('qrUploadMsg');
-  if (msgBox) msgBox.textContent = "";
-  
-  if (window.resetCameraOnClear) {
-    window.resetCameraOnClear();
-  }
+  window.location.reload();
 });
 
 </script>

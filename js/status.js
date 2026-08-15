@@ -44,21 +44,23 @@ function renderStatus(seedType, result) {
 
   // Wallet type always goes into <pre id="version">
   let walletType;
-if (seedType === "electrum" && result.version) {
-  // use the subtype string like "segwit", "2fa", "2fa_segwit"
-  walletType = WALLET_TYPES[result.version] || "Electrum (unknown)";
-} else if (seedType === "bip39") {
-  walletType = WALLET_TYPES["bip39"];
-} else {
-  walletType = "unknown";
-  // Also show the seed words as a single string under the QR
-  const inputs = document.querySelectorAll('#words input');
-  const words = Array.from(inputs).map(inp => inp.value.trim()).filter(Boolean);
-}
+  if (seedType === "electrum" && result.version) {
+    // use the subtype string like "segwit", "2fa", "2fa_segwit"
+    walletType = WALLET_TYPES[result.version] || "Electrum (unknown)";
+  } else if (seedType === "bip39") {
+    walletType = WALLET_TYPES["bip39"];
+  } else {
+    walletType = "unknown";
+    // Also show the seed words as a single string under the QR
+    const inputs = document.querySelectorAll('#words input');
+    const words = Array.from(inputs).map(inp => inp.value.trim()).filter(Boolean);
+  }
   document.getElementById('version').textContent = walletType;
 
-  // Optionally: auto‑show results card when we have a wallet type
-  if (walletType && walletType !== "unknown") {
-    document.getElementById('results').style.display = 'flex';
-  }
+  // auto-show resultsCard when we have a wallet type
+//  if (walletType && walletType !== "unknown") {
+//    hideCard('upload');
+//    hideCard('camera');
+//    showCard('results');
+//  }
 }
