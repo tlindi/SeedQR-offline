@@ -29,11 +29,20 @@ function renderQR(payloadBytes) {
   var qrcodeElement = document.getElementById('qrcode');
   if (qrcodeElement) {
     qrcodeElement.innerHTML = '';
-    qrcodeElement.appendChild(canvas);
 
-  // --- CAMERA: stop camera and show QR view ---
-  if (window.stopCamera) window.stopCamera();
-  if (window.showQRCode) window.showQRCode();
+    // Wrap canvas in an anchor so downloads can carry a filename via the download attribute.
+    var link = document.createElement('a');
+    link.id = 'qrcodeLink';
+    link.href = '#';                 // will be replaced by blob URL when setting filename
+    link.download = 'download.png';  // default; update programmatically later
+    link.style.display = 'inline-block';
+    link.appendChild(canvas);
+
+    qrcodeElement.appendChild(link);
+
+    // --- CAMERA: stop camera and show QR view ---
+    if (window.stopCamera) window.stopCamera();
+    if (window.showQRCode) window.showQRCode();
 
   } else {
     console.warn("#qrcode element not found");
