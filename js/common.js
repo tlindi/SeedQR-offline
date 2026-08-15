@@ -98,7 +98,7 @@ async function updateResults() {
   const hexPre    = document.getElementById('hex');
   const bitsPre   = document.getElementById('bits');
   const versionEl = document.getElementById('version');
-  const resultsEl = document.getElementById('results');
+  const resultsEl = document.getElementById('resultsCard');
 
   // Require all 12 words
   const els = Array.from(document.querySelectorAll('#words input'));
@@ -117,6 +117,7 @@ async function updateResults() {
 
     // --- Debug overrides ---
     if (debug === "bip39") {
+      console.log('updateResults Debug overrides - bip39', { lastUpload: window.lastUpload });
       const { bytes, bitstr } = buildCompactSeedQRPayload(words);
       const bitstr128 = bitstr.slice(0, 128);
       bip39Res = await checkBIP39Checksum(words, bitstr128);
@@ -125,6 +126,7 @@ async function updateResults() {
       setPayloadAndIndices(bytes, bitstr, words, bytesPre, hexPre, bitsPre);
 
     } else if (debug === "electrum" || debug === "electrum_2fa") {
+      console.log('updateResults Debug overrides - electrum/electrum_2fa', { lastUpload: window.lastUpload });
       const { bitstr, bytes } = packElectrumIndices(indices);
       electrumRes = checkElectrumChecksum(words);
       seedType    = "electrum";
@@ -133,12 +135,14 @@ async function updateResults() {
       setPayloadAndIndices(bytes, bitstr, words, bytesPre, hexPre, bitsPre);
     }
 
-    // --- Normal detection (upload or paste) ---
+    // --- Normal detection upload  ---
     if (!debug) {
+      console.log('Normal detection upload - non debug mode', { lastUpload: window.lastUpload });
       if (window.lastUpload && window.lastUpload.words.join(" ") === words.join(" ")) {
         const { type, bytes, version } = window.lastUpload;
 
         if (type === "electrum") {
+          console.log('Normal detection upload - non debug mode - electrum', { lastUpload: window.lastUpload });
           electrumRes = checkElectrumChecksum(words);
           seedType = "electrum";
           payloadBytes = bytes;
@@ -151,6 +155,7 @@ async function updateResults() {
           if (!electrumRes.version) electrumRes.version = "electrum_standard";
 
         } else if (type === "seedqr") {
+          console.log('Normal detection upload - non debug mode - seedqr', { lastUpload: window.lastUpload });
           const bitstr128 = indices.map(i => i.toString(2).padStart(11,"0")).join("").slice(0,128);
           bip39Res = await checkBIP39Checksum(words, bitstr128);
           seedType = "bip39";
@@ -164,31 +169,42 @@ async function updateResults() {
 
 } else {
   // --- Fallback detection ---
+    console.log('Fallback detection', { lastUpload: window.lastUpload });
     const { bytes, bitstr } = buildCompactSeedQRPayload(words);
     const bitstr128 = bitstr.slice(0, 128);
     bip39Res = await checkBIP39Checksum(words, bitstr128);
 
     if (bip39Res.ok) {
+      console.log('Fallback detection - bip39Res.ok', { lastUpload: window.lastUpload });
+
       seedType = "bip39";
       payloadBytes   = bytes;
       bitstrToRender = bitstr;
       renderPayload(payloadBytes, bitstrToRender, bytesPre, hexPre, bitsPre, pbytesPre);
+      hideCard('upload');
+      hideCard('camera');
+      showCard('results');
     } else {
       electrumRes = checkElectrumChecksum(words);
 
       if (electrumRes.ok) {
+        console.log('Fallback detection - electrumRes.ok', { lastUpload: window.lastUpload });
         seedType = "electrum";
         const packed = packElectrumIndices(indices);
         payloadBytes   = packed.bytes;
         bitstrToRender = packed.bitstr;
         renderPayload(payloadBytes, bitstrToRender, bytesPre, hexPre, bitsPre, pbytesPre);
+        hideCard('upload');
+        hideCard('camera');
+        showCard('results');
       } else {
-        console.log("Electrum failed, marking Unknown");
+        console.log('Fallback detection - else', { lastUpload: window.lastUpload });
         seedType = "Unknown";
         payloadBytes   = null;
         bitstrToRender = "";
       }
     }
+
 }
     }
 
@@ -201,11 +217,12 @@ async function updateResults() {
     renderStatus(seedType, result, status, debug);
     renderWalletType(seedType, result, versionEl);
 
-    resultsEl.style.display = 'block';
+    showCard('results');
+    
   } catch (err) {
     status.textContent = 'Error: ' + err.message;
     status.className = 'err';
-    resultsEl.style.display = 'none';
+    hideCard('results');  
   }
 
   const inputs = document.querySelectorAll('#words input');
