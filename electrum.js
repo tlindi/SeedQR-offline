@@ -167,7 +167,9 @@ function decodeElectrumSeed(bytes, versionTag = "segwit") {
     const words = indices.map(i => WORDLIST[i]).concat(WORDLIST[lastIdx]);
     const res = checkElectrumChecksum(words);
     if (res && res.ok) {
-      return { words, version: res.version };
+      // Return canonical words array (callers expect an Array).
+      // Callers that need version can call checkElectrumChecksum(words).
+      return words;
     }
   }
 
