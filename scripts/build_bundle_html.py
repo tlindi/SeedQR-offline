@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-scripts/build_single_html.py
+scripts/build_bundle_html.py
 
-Merge local CSS and JS files referenced in SeedQR.html into one standalone HTML file
+Merge local CSS and JS files referenced in index.html into one standalone HTML file
 for release distribution.
 
 Usage:
-  python3 scripts/build_single_html.py [--input SeedQR.html] [--output dists/SeedQR.bundle.html]
+  python3 scripts/build_bundle_html.py [--input index.html] [--output SeedQR.html]
 
 Behavior:
   - Inlines local <link rel="stylesheet" href="..."> into <style> blocks.
   - Inlines local <script src="..."></script> into <script> blocks.
   - Leaves absolute (http/https) resources unchanged.
-  - Writes the bundled file to the output path (creates parent dirs).
+  - Writes the bundled file to the output path (creates parent dirs if needed).
 """
 import argparse
 import re
@@ -68,16 +68,16 @@ def inline_scripts(html: str, base_dir: Path):
 
 def main(argv):
     parser = argparse.ArgumentParser(
-        description="Bundle SeedQR html with local CSS/JS into a single file"
+        description="Bundle index.html with local CSS/JS into a single file"
     )
     parser.add_argument(
-        "--input", "-i", default="SeedQR.html", help="input HTML file (default: SeedQR.html)"
+        "--input", "-i", default="index.html", help="input HTML file (default: index.html)"
     )
     parser.add_argument(
         "--output",
         "-o",
-        default="dists/SeedQR.bundle.html",
-        help="output bundled HTML (default: dists/SeedQR.bundle.html)",
+        default="SeedQR.html",
+        help="output bundled HTML (default: SeedQR.html)",
     )
     args = parser.parse_args(argv)
 
@@ -97,7 +97,7 @@ def main(argv):
 
     # Add a metadata comment at top
     now = datetime.utcnow().isoformat() + "Z"
-    header = f"<!-- Bundled by scripts/build_single_html.py on {now} UTC -->\n"
+    header = f"<!-- Bundled by scripts/build_bundle_html.py on {now} UTC -->\n"
     out_html = header + html
 
     out_path = Path(args.output)
