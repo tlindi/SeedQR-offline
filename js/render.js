@@ -31,18 +31,20 @@ function renderQR(payloadBytes) {
     qrcodeElement.innerHTML = '';
 
     // Wrap canvas in an anchor so downloads can carry a filename via the download attribute.
-    var link = document.createElement('a');
-    link.id = 'qrcodeLink';
-    link.href = '#';                 // will be replaced by blob URL when setting filename
-    link.download = 'download.png';  // default; update programmatically later
-    link.style.display = 'inline-block';
-    link.appendChild(canvas);
+    const qrcodeLink = document.createElement('a');
+    qrcodeLink.id = 'qrcodeLink';
+    qrcodeLink.href = '#';                 // replaced later by download.js with blob URL
+    qrcodeLink.download = 'download.png';  // default filename; updated programmatically
+    qrcodeLink.title = 'Download QR image as PNG';
+    qrcodeLink.setAttribute('aria-label', 'Download QR image as PNG');
+    qrcodeLink.style.display = 'inline-block';
+    qrcodeLink.appendChild(canvas);
 
-    qrcodeElement.appendChild(link);
+    qrcodeElement.appendChild(qrcodeLink);
 
-    // --- CAMERA: stop camera and show QR view ---
-    if (window.stopCamera) window.stopCamera();
-    if (window.showQRCode) window.showQRCode();
+  // --- CAMERA: stop camera and show QR view ---
+  if (window.stopCamera) window.stopCamera();
+  if (window.showQRCode) window.showQRCode();
 
   } else {
     console.warn("#qrcode element not found");

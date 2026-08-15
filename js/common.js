@@ -217,6 +217,31 @@ async function updateResults() {
     renderStatus(seedType, result, status, debug);
     renderWalletType(seedType, result, versionEl);
 
+    // --- update download filename using download.js API (keeps sanitization and blob handling centralized) ---
+    try {
+      let filename = 'SeedQR';
+      if (seedType === 'bip39') {
+        filename = 'SeedQR BIP39';
+      } else if (seedType === 'electrum') {
+        const vkey = (result && result.version) ? result.version : (electrumRes && electrumRes.version) ? electrumRes.version : 'electrum_standard';
+        const map = {
+          electrum_standard: 'Electrum',
+          electrum_segwit:   'Electrum (Segwit)',
+          electrum_2fa:      'Electrum (2FA)',
+          electrum_2fa_segwit: 'Electrum (2FA Segwit)'
+        };
+        filename = 'SeedQR ' + (map[vkey] || 'Electrum');
+      } else {
+        filename = 'SeedQR Unknown';
+      }
+
+      if (window.SeedQRDownloader && typeof window.SeedQRDownloader.setFilename === 'function') {
+        window.SeedQRDownloader.setFilename(filename + '.png');
+      }
+    } catch (e) {
+      console.warn('Could not set QR download filename', e);
+    }
+
     showCard('results');
     
   } catch (err) {
