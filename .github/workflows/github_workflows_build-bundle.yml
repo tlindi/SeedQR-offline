@@ -1,0 +1,44 @@
+name: Build single HTML bundle
+
+# Trigger on manual dispatch and pushes to the branch used for this change
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - bundle-single-html
+
+permissions:
+  contents: write  # needed if the workflow commits the output back to the repo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Run bundler
+        run: |
+          python3 scripts/build_single_html.py -i SeedQR.html -o dists/SeedQR.bundle.html
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SeedQR-bundle
+          path: dists/SeedQR.bundle.html
+
+      # Optional: commit the bundled file back to the branch (uncomment if desired)
+      - name: Commit bundled file back to branch (optional)
+        if: always()
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: github-actions
+          author_email: github-actions@users.noreply.github.com
+          message: "Add bundled SeedQR HTML (generated)"
+          add: "dists/SeedQR.bundle.html"
+          push: true
