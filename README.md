@@ -4,7 +4,9 @@ Offline generate and decode SeedQR style 12-word phrases of Electrum and BIP39 o
 
 Complies with: https://github.com/SeedSigner/seedsigner/blob/dev/docs/seed_qr/README.md
 
-Don't trust, but verify - test URL: https://tlindi.github.io/SeedQR-offline/SeedQR.html
+Don't trust, but verify 
+- test URL: https://tlindi.github.io/SeedQR-offline/SeedQR.html
+- bundled single html file: https://tlindi.github.io/SeedQR-offline/dists/SeedQR.bundle.html
 
 ## What is this?
 A small, client-side web app that encodes/decodes compact 21×21 "SeedQR" payloads for 12-word BIP39 and Electrum seeds entirely offline in the browser. It provides a UI for typing/pasting 12 words, uploading or scanning a QR image (camera support), normalizes QR payloads, and decodes into words (or builds the compact payload and QR). Intended for users who want an offline tool to inspect or generate compact SeedQRs.
