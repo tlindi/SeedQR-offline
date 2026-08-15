@@ -1,64 +1,170 @@
-# Updated build-bundle workflow: only upload/commit when bundle exists.
-name: Build single HTML bundle
+# Build and publish bundle (no Node actions)
+# - clones the repository with GITHUB_TOKEN
+# - runs the Python bundler scripts/build_bundle_html.py
+# - optionally commits the generated bundle back to the branch (now commits SeedQR.html at repo root)
+# - optionally creates a Release and uploads the bundle as a release asset (SeedQR.html)
+#
+# Triggers:
+# - manual (workflow_dispatch): set publish_release=true to create a release
+# - push tags matching v* (e.g., v1.0.0) will trigger build+release
+name: Build and publish bundle (no Node actions)
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Create GitHub Release and upload bundle'
+        required: false
+        default: 'false'
+      release_tag:
+        description: 'Release tag to create (optional). If blank and run by tag push, the pushed tag will be used.'
+        required: false
+        default: ''
   push:
-    branches:
-      - bundle-single-html
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  build_and_release:
     runs-on: ubuntu-latest
+    outputs:
+      bundle_exists: ${{ steps.check_bundle.outputs.exists }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          # ensure we can push back if needed
-          persist-credentials: true
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Run bundler
-        id: run_bundler
+      - name: Show runner context
         run: |
-          set -e
-          python3 scripts/build_bundle_html.py -i SeedQR.html -o dists/SeedQR.bundle.html
+          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
+          echo "GITHUB_REF=$GITHUB_REF"
+          echo "Event name: $GITHUB_EVENT_NAME"
+
+      - name: Clone repository (no actions/checkout)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Clone the repository so we can run the bundler and optionally push
+          git clone --depth=1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
+          cd repo
+          # If this run was triggered by a tag push, attempt to checkout that tag
+          if [ "${GITHUB_REF#refs/tags/}" != "$GITHUB_REF" ]; then
+            TAGNAME="${GITHUB_REF#refs/tags/}"
+            git fetch --depth=1 origin "refs/tags/${TAGNAME}" || true
+            git checkout -f "${TAGNAME}" || true
+          fi
+          pwd
+          ls -la
+
+      - name: Run bundler (system Python) — input index.html, output SeedQR.html
+        run: |
+          set -euo pipefail
+          cd repo
+          echo "Python: $(python3 --version || true)"
+          # Use index.html as the source and produce a standalone SeedQR.html at repo root
+          python3 scripts/build_bundle_html.py -i index.html -o SeedQR.html || (echo "Bundler failed"; exit 1)
+          echo "Bundle created (if success):"
+          ls -la SeedQR.html || true
 
       - name: Check bundle exists
         id: check_bundle
         run: |
-          if [ -f "dists/SeedQR.bundle.html" ]; then
+          if [ -f "repo/SeedQR.html" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Upload bundle artifact
-        if: steps.check_bundle.outputs.exists == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: SeedQR-bundle
-          path: dists/SeedQR.bundle.html
-
-      # Optional: commit the bundled file back to the branch using git (avoids Node-based action)
       - name: Commit bundled file back to branch (optional)
         if: steps.check_bundle.outputs.exists == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
+          set -euo pipefail
+          cd repo
+          # Determine branch to push back to (when the run was a branch push). For manual runs, default to main.
+          BRANCH="main"
+          if [ "${GITHUB_REF#refs/heads/}" != "$GITHUB_REF" ]; then
+            BRANCH="${GITHUB_REF#refs/heads/}"
+          fi
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add dists/SeedQR.bundle.html
-          # Only commit if there are changes
+          git add SeedQR.html
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
             git commit -m "Add bundled SeedQR HTML (generated)"
-            git push
+            git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${BRANCH}"
           fi
+
+      - name: Ensure jq is available
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
+          jq --version
+
+      - name: Create Release and upload bundle (if requested or on tag push)
+        if: steps.check_bundle.outputs.exists == 'true' && (github.event_name == 'push' || github.event.inputs.publish_release == 'true')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd repo
+
+          # Determine tag to use:
+          TAG=""
+          if [ "${GITHUB_REF#refs/tags/}" != "$GITHUB_REF" ]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+
+          # Use workflow input release_tag if provided
+          if [ -z "$TAG" ]; then
+            INPUT_TAG="${{ github.event.inputs.release_tag }}"
+            if [ -n "$INPUT_TAG" ]; then
+              TAG="$INPUT_TAG"
+            fi
+          fi
+
+          # Fallback to a timestamped tag
+          if [ -z "$TAG" ]; then
+            TAG="bundle-$(date -u +%Y%m%d%H%M%S)"
+          fi
+
+          echo "Using tag: $TAG"
+
+          # Create tag if it doesn't already exist
+          if git rev-parse "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists"
+          else
+            git tag "${TAG}"
+            git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${TAG}"
+          fi
+
+          # Create Release using GitHub REST API
+          API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/releases"
+          CREATE_JSON=$(jq -n --arg t "$TAG" --arg b "Automated bundle created by workflow." '{ tag_name: $t, name: $t, body: $b, draft: false, prerelease: false }')
+          echo "Create payload: $CREATE_JSON"
+          response=$(curl -s -X POST -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" "$API_URL" -d "$CREATE_JSON")
+          upload_url=$(echo "$response" | jq -r .upload_url)
+          if [ -z "$upload_url" ] || [ "$upload_url" = "null" ]; then
+            echo "Failed to create release or get upload_url. Response:"
+            echo "$response"
+            exit 1
+          fi
+
+          # Trim URL template and upload the bundle as release asset
+          upload_url=${upload_url%\{*}
+          ASSET_PATH="SeedQR.html"
+          if [ ! -f "$ASSET_PATH" ]; then
+            echo "Asset not found at $ASSET_PATH"
+            exit 1
+          fi
+
+          echo "Uploading $ASSET_PATH to release"
+          curl --fail -X POST \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            -H "Content-Type: text/html" \
+            --data-binary @"$ASSET_PATH" \
+            "${upload_url}?name=$(basename $ASSET_PATH)&label=SeedQR.bundle"
