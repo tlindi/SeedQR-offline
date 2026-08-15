@@ -2,8 +2,6 @@
 
 Offline generate and decode SeedQR style 12-word phrases of Electrum and BIP39 onto 21x21 compact QR 
 
-Complies with: https://github.com/SeedSigner/seedsigner/blob/dev/docs/seed_qr/README.md
-
 Don't trust, but verify 
 - test URL: https://tlindi.github.io/SeedQR-offline/SeedQR.html
 - bundled single html file: https://tlindi.github.io/SeedQR-offline/dists/SeedQR.bundle.html
@@ -16,6 +14,9 @@ A small, client-side web app that encodes/decodes compact 21×21 "SeedQR" payloa
 - Encode 12 word seed to Compact SeedQR size 21x21 from words (paste supported)
 - Decode 12 word seed from Compact SeedQR size 21x21 from uploaded .png
 - some debug attributes for geeks to see more detail
+
+## Tests done
+Complies with: https://github.com/SeedSigner/seedsigner/blob/dev/docs/seed_qr/README.md
 
 ## Done
 - [x] Feature: Mobile phone camera support v0.2
