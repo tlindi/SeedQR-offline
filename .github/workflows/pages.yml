@@ -9,11 +9,9 @@ jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+        uses: actions/setup-node@v6
       - name: Install
         run: npm install
       - name: Build
@@ -23,4 +21,4 @@ jobs:
         with:
           path: ./build
       - name: Deploy to GitHub Pages (SeedQR-offline)
-        uses: actions/deploy-pages@v4.0.5
+        uses: actions/deploy-pages@v4
