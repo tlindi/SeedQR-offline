@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 scripts/build_bundle_html.py
 
