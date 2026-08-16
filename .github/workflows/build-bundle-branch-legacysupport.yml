@@ -45,7 +45,7 @@ jobs:
         run: |
           python3 scripts/build_bundle_html-legacysupport.py \
             --input index.html \
-            --output SeedQR.html \
+            --output SeedQR-legacy.html \
         continue-on-error: false
 
       - name: Verify bundle file was created
@@ -98,19 +98,19 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const bundleSize = fs.statSync('SeedQR.html').size / 1024;
+            const bundleSize = fs.statSync('SeedQR-legacy.html').size / 1024;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `✓ **Build successful (legacysupport branch)!**\n\n📦 Bundle: \`SeedQR.html\` (${bundleSize.toFixed(2)} KB)\n\n✓ ES5 validation passed\n\nRun locally: \`python3 scripts/build_bundle_html-legacysupport.py --strict\``
+              body: `✓ **Build successful (legacysupport branch)!**\n\n📦 Bundle: \`SeedQR-legacy.html\` (${bundleSize.toFixed(2)} KB)\n\n✓ ES5 validation passed\n\nRun locally: \`python3 scripts/build_bundle_html-legacysupport.py --strict\``
             });
 
       - name: Create Release (on tag push)
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: SeedQR.html
+          files: SeedQR-legacy.html
           draft: false
           prerelease: false
         env:
