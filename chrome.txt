@@ -1,0 +1,20 @@
+updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28234 updateResults start Object {lastUpload: undefined}
+SeedQR-legacy.html:28291 Normal detection upload - non debug mode Object {lastUpload: undefined}
+SeedQR-legacy.html:28348 Fallback detection Object {lastUpload: undefined}
