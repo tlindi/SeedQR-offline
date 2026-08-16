@@ -17,10 +17,16 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+# build-deploy:
+# - name: Lint (ES5 validation)
+#  run: npx eslint . --max-warnings 0
+# - name: Build
+#  run: npm run build
+
 jobs:
   deploy:
     environment:
-      name: github-pages
+      name: github-pages-yml
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
@@ -28,15 +34,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
-
-      // build-deploy:
-  
-      // - name: Lint (ES5 validation)
-      //  run: npx eslint . --max-warnings 0
-
-      // - name: Build
-      //  run: npm run build
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
