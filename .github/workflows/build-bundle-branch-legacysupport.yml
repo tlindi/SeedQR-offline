@@ -107,6 +107,7 @@ jobs:
             echo "No changes to legacy build"
           else
             git commit -m "Add bundled SeedQR HTML (generated legacy)"
+            git reset --hard
             git pull origin ${{ github.ref_name }} --rebase || git rebase --abort
             git push origin ${{ github.ref_name }}
           fi
