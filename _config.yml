@@ -1,0 +1,20 @@
+# _config.yml
+title: SeedQR-offline
+description: Compact SeedQR decoder for 12-word phrases (21x21 QR)
+url: "https://tlindi.github.io"        # your site base URL (no trailing slash)
+baseurl: "/SeedQR-offline"            # project repo path; set to "" for user site
+theme: minima                         # or your chosen theme
+markdown: kramdown
+permalink: /:path/                    # friendly permalinks
+exclude:
+  - node_modules
+  - vendor
+  - Gemfile
+  - Gemfile.lock
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Optional: build settings
+sass:
+  style: compressed
