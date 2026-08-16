@@ -1,9 +1,0 @@
-SyntaxError: class is a reserved identifier SeedQR.html:11320:693
-SyntaxError: invalid arrow-function arguments (parentheses around the arrow-function may help) SeedQR.html:11570:63
-SyntaxError: missing ; before statement SeedQR.html:11738:6
-SyntaxError: missing ; before statement SeedQR.html:12214:6
-SyntaxError: missing ; before statement SeedQR.html:12785:6
-SyntaxError: missing ; before statement SeedQR.html:12818:6
-SyntaxError: missing ; before statement SeedQR.html:12919:6
-SyntaxError: missing ; before statement SeedQR.html:13108:6
-SyntaxError: missing ; before statement SeedQR.html:13371:6

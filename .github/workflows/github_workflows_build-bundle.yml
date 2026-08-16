@@ -7,7 +7,7 @@
 # Triggers:
 # - manual (workflow_dispatch): set publish_release=true to create a release
 # - push tags matching v* (e.g., v1.0.0) will trigger build+release
-name: Build and publish bundle (no Node actions)
+name: Build and publish bundle
 
 on:
   workflow_dispatch:
@@ -26,7 +26,6 @@ on:
   pull_request:
     branches:
       - main 
-      - FIX-legacysupport
       
 permissions:
   contents: write
