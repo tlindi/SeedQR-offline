@@ -14,11 +14,13 @@ jobs:
         uses: actions/setup-node@v7
       - name: Install
         run: npm install
+      - name: Install eslint 
+        run: npm install eslint
       - name: Build
         run: npm run build
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./build
       - name: Deploy to GitHub Pages (SeedQR-offline)
-        uses: actions/deploy-pages@v4.0.5
+        uses: actions/deploy-pages@v5
