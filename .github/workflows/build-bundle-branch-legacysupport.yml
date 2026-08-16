@@ -15,7 +15,6 @@ on:
       - '.github/workflows/build-bundle-branch-legacysupport.yml'
   pull_request:
     branches:
-      - legacysupport
       - FIX-legacysupport
 
 permissions:
