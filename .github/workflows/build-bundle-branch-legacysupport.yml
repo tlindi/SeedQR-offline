@@ -102,7 +102,6 @@ jobs:
 
       - name: Commit and push if bundle changed
         run: |
-          run: |
           git add SeedQR-legacy.html js-legacy libs-legacy
           if git diff --cached --quiet; then
             echo "No changes to legacy build"
