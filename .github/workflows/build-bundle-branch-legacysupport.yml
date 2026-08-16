@@ -66,7 +66,7 @@ jobs:
           fi
 
       - name: Upload bundle as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SeedQR-bundle
           path: SeedQR.html
