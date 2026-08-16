@@ -92,14 +92,21 @@ async function decodeSeedWordsFromData(input) {
 async function decodeSeedWordsFromFile(file) {
   const { text, payload, bytes } = await decodeQRFromFile(file).catch(e => { throw e; });
 
-  // decodeQRFromFile may return { text, payload } per earlier suggestion.
-  // Accept either `payload` (canonical) or `bytes` (raw) for backward compatibility.
-  const input = payload || bytes;
-  if (!input) throw new Error('QR decode failed or returned no binary payload');
+  let input = payload || bytes || text;
+  if (!input) throw new Error('QR decode failed or returned no payload (payload, bytes, or text)');
 
-  return await decodeSeedWordsFromData(input);
+  if (payload) {
+    console.log("Decoding case: payload");
+  } else if (bytes) {
+    console.log("Decoding case: bytes");
+  } else if (text) {
+    console.log("Decoding case: text (legacy)");
+  }
+
+  const data = input instanceof Uint8Array ? input : new TextEncoder().encode(input);
+
+  return await decodeSeedWordsFromData(data);
 }
-
 // Optional: accept low-level qr result (jsQR/ZXing) and decode
 async function decodeSeedWordsFromQRResult(qrResult) {
   // prefer centralized reader if available
@@ -133,9 +140,12 @@ function handleDecodedResult(result) {
   const clearBtn = document.getElementById('clearBtn');
   if (clearBtn) clearBtn.disabled = false;
 
-  // structured debug log
-  console.log('Decoded seed accepted', {
-    type, wordsCount: words.length, transform, version, source, hex: (window.helpers && window.helpers.bytesToHex) ? window.helpers.bytesToHex(bytes, ' ') : undefined
+  console.log(`decodeSeedWordsFromData: accepted seed type=${type}`, {
+    wordsCount: words.length,
+    transform,
+    version,
+    source,
+    hex: (window.helpers && window.helpers.bytesToHex) ? window.helpers.bytesToHex(bytes, ' ') : undefined
   });
 
   // update UI
