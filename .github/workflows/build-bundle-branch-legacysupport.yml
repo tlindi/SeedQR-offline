@@ -48,6 +48,31 @@ jobs:
             --strict
         continue-on-error: false
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Babel
+        run: npm install --save-dev @babel/core @babel/cli @babel/preset-env
+
+      - name: Transpile SeedQR-legacy.html bundle to ES5
+        run: |
+          # Create Babel configuration
+          echo '{
+            "presets": [
+              ["@babel/preset-env", {
+                "targets": {
+                  "chrome": "49",
+                  "firefox": "44"
+                }
+              }]
+            ]
+          }' > .babelrc
+
+          # Transpile all <script> content to bundle
+          npx babel SeedQR-legacy.html --out-file SeedQR-legacy.html
+
       - name: Verify bundle file was created
         run: |
           if [ ! -f SeedQR-legacy.html ]; then
