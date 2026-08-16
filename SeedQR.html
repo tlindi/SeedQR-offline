@@ -1,4 +1,4 @@
-<!-- Bundled by scripts/build_bundle_html.py on 2026-08-15T23:12:42.009179Z UTC -->
+<!-- Bundled by scripts/build_bundle_html.py on 2026-08-16T00:17:56.800771Z UTC -->
 <!-- SeedQR.html -->
 <!DOCTYPE html>
 <html lang="en">
@@ -11967,7 +11967,18 @@ function renderQR(payloadBytes) {
   var qrcodeElement = document.getElementById('qrcode');
   if (qrcodeElement) {
     qrcodeElement.innerHTML = '';
-    qrcodeElement.appendChild(canvas);
+
+    // Wrap canvas in an anchor so downloads can carry a filename via the download attribute.
+    const qrcodeLink = document.createElement('a');
+    qrcodeLink.id = 'qrcodeLink';
+    qrcodeLink.href = '#';                 // replaced later by download.js with blob URL
+    qrcodeLink.download = 'download.png';  // default filename; updated programmatically
+    qrcodeLink.title = 'Download QR image as PNG';
+    qrcodeLink.setAttribute('aria-label', 'Download QR image as PNG');
+    qrcodeLink.style.display = 'inline-block';
+    qrcodeLink.appendChild(canvas);
+
+    qrcodeElement.appendChild(qrcodeLink);
 
   // --- CAMERA: stop camera and show QR view ---
   if (window.stopCamera) window.stopCamera();
@@ -12081,7 +12092,6 @@ function renderPayload(bytes, bitstr, bytesPre, hexPre, bitsPre,pbytesPre) {
     pbytesPre.textContent = pyStr;
   }
 }
-
 </script>
 
 <!-- inlined: js/common.js -->
@@ -12305,6 +12315,31 @@ async function updateResults() {
     renderPayload(payloadBytes, bitstrToRender, bytesPre, hexPre, bitsPre, pbytesPre);
     renderStatus(seedType, result, status, debug);
     renderWalletType(seedType, result, versionEl);
+
+    // --- update download filename using download.js API (keeps sanitization and blob handling centralized) ---
+    try {
+      let filename = 'SeedQR';
+      if (seedType === 'bip39') {
+        filename = 'SeedQR BIP39';
+      } else if (seedType === 'electrum') {
+        const vkey = (result && result.version) ? result.version : (electrumRes && electrumRes.version) ? electrumRes.version : 'electrum_standard';
+        const map = {
+          electrum_standard: 'Electrum',
+          electrum_segwit:   'Electrum (Segwit)',
+          electrum_2fa:      'Electrum (2FA)',
+          electrum_2fa_segwit: 'Electrum (2FA Segwit)'
+        };
+        filename = 'SeedQR ' + (map[vkey] || 'Electrum');
+      } else {
+        filename = 'SeedQR Unknown';
+      }
+
+      if (window.SeedQRDownloader && typeof window.SeedQRDownloader.setFilename === 'function') {
+        window.SeedQRDownloader.setFilename(filename + '.png');
+      }
+    } catch (e) {
+      console.warn('Could not set QR download filename', e);
+    }
 
     showCard('results');
     
@@ -13384,6 +13419,90 @@ function decodeQRFromFileFallback(file) {
 // Export for other scripts
 window.decodeQRFromFile = window.decodeQRFromFile || decodeQRFromFile;
 
+</script>
+
+<!-- Download helper (controls qrcodeLink blob + filename) -->
+<!-- inlined: js/download.js -->
+<script>
+/* js/download.js */
+// download.js
+// Responsible for setting a descriptive filename for the QR canvas download.
+// Exposes window.SeedQRDownloader.setFilename(name) which will:
+//  - sanitize the name
+//  - build a PNG blob from the <canvas> inside #qrcode
+//  - set #qrcodeLink.href and #qrcodeLink.download to point to that blob and filename
+//  - revoke any previously-created blob URL to avoid leaking memory
+
+(function () {
+  // sanitize filename: remove path separators and illegal characters, collapse whitespace, cap length
+  function sanitizeFilename(name) {
+    if (!name) name = 'SeedQR';
+    // Remove chars that are unsafe in filenames
+    const safe = String(name).replace(/[\/\\?%*:|"<>]/g, ' ').trim();
+    // collapse whitespace and trim to reasonable length
+    const collapsed = safe.replace(/\s+/g, ' ').substring(0, 120);
+    // If empty after sanitization, fallback
+    return collapsed || 'SeedQR';
+  }
+
+  // create/update blob URL from canvas and set link href + download
+  function updateLinkWithCanvasFilename(filename) {
+    const link = document.getElementById('qrcodeLink');
+    const canvas = document.querySelector('#qrcode canvas');
+    if (!link || !canvas) return;
+
+    // revoke previous blob URL if present
+    if (link.dataset && link.dataset.blobUrl) {
+      try { URL.revokeObjectURL(link.dataset.blobUrl); } catch (e) {}
+      delete link.dataset.blobUrl;
+    }
+
+    const clean = sanitizeFilename(filename);
+    const finalName = clean.toLowerCase().endsWith('.png') ? clean : (clean + '.png');
+
+    if (canvas.toBlob) {
+      canvas.toBlob(function (blob) {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = finalName;
+        link.dataset.blobUrl = url;
+      }, 'image/png');
+    } else {
+      // fallback to data URL
+      try {
+        const dataUrl = canvas.toDataURL('image/png');
+        link.href = dataUrl;
+        link.download = finalName;
+      } catch (e) {
+        console.warn('SeedQRDownloader: failed to create data URL', e);
+      }
+    }
+  }
+
+  // expose API
+  window.SeedQRDownloader = {
+    // setFilename expects a base filename (with or without .png)
+    setFilename: function (name) {
+      try {
+        updateLinkWithCanvasFilename(name);
+      } catch (e) {
+        console.warn('SeedQRDownloader.setFilename error', e);
+      }
+    },
+    // optional helper to disable / clear the link (not strictly necessary)
+    clear: function () {
+      const link = document.getElementById('qrcodeLink');
+      if (!link) return;
+      if (link.dataset && link.dataset.blobUrl) {
+        try { URL.revokeObjectURL(link.dataset.blobUrl); } catch (e) {}
+        delete link.dataset.blobUrl;
+      }
+      link.href = '#';
+      link.download = 'download.png';
+    }
+  };
+})();
 </script>
 
 
