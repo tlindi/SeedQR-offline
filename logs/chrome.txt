@@ -1,8 +1,23 @@
-Uncaught SyntaxError: Unexpected token (
-SeedQR-legacy.html:11809 Uncaught SyntaxError: Unexpected token function
-SeedQR-legacy.html:12285 Uncaught SyntaxError: Unexpected token function
-SeedQR-legacy.html:12856 Uncaught SyntaxError: Unexpected token function
-SeedQR-legacy.html:12889 Uncaught SyntaxError: Unexpected token function
-SeedQR-legacy.html:12990 Uncaught SyntaxError: Unexpected token function
-SeedQR-legacy.html:13179 Uncaught SyntaxError: Unexpected token function
-SeedQR-legacy.html:13442 Uncaught SyntaxError: Unexpected token function
+SeedQR.html:11323 Uncaught ReferenceError: globalThis is not defined
+(anonymous function) @ SeedQR.html:11323
+Object.setPrototypeOf.__proto__ @ SeedQR.html:11309
+(anonymous function) @ SeedQR.html:11309
+
+SeedQR.html:11490 Uncaught SyntaxError: Unexpected token (
+
+SeedQR.html:11658 Uncaught SyntaxError: Unexpected token function
+
+SeedQR.html:12134 Uncaught SyntaxError: Unexpected token function
+
+SeedQR.html:12705 Uncaught SyntaxError: Unexpected token function
+
+SeedQR.html:12738 Uncaught SyntaxError: Unexpected token function
+
+SeedQR.html:12839 Uncaught SyntaxError: Unexpected token function
+
+SeedQR.html:13028 Uncaught SyntaxError: Unexpected token function
+
+SeedQR.html:13291 Uncaught SyntaxError: Unexpected token function
+
+SeedQR.html:12419 Uncaught TypeError: inputs.forEach is not a functionattachValidation @ SeedQR.html:12419
+window.addEventListener @ SeedQR.html:13565
