@@ -2,8 +2,6 @@
 // - NodeList.forEach
 // - Array.from (robust polyfill from MDN, supports array-like objects and optional mapFn)
 //
-// Include this file BEFORE your other scripts (e.g. put <script src="js/polyfills.js"></script>
-// at the top of index.html, before js/common.js and friends).
 
 (function () {
   // NodeList.forEach polyfill
