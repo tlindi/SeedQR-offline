@@ -18,6 +18,9 @@ on:
       - legacysupport
       - FIX-legacysupport
 
+permissions:
+  contents: write
+  
 jobs:
   build:
     runs-on: ubuntu-latest
