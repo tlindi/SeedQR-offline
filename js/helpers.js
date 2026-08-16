@@ -40,12 +40,6 @@ function stripNibblesAndSlice(raw, nibbles, outLen = 16) {
   return out;
 }
 
-// helper: bytes -> hex with full hex for 16-byte payloads
-  function bytesToHex(u8) {
-    if (!u8) return '';
-    return Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
 function bytesToWordArray(byteArray) {
   // fixed initialization to avoid NaN from uninitialized slots
   const words = new Array(Math.ceil(byteArray.length / 4)).fill(0);
@@ -53,6 +47,12 @@ function bytesToWordArray(byteArray) {
     words[(i / 4) | 0] |= byteArray[i] << (24 - 8 * (i % 4));
   }
   return CryptoJS.lib.WordArray.create(words, byteArray.length);
+}
+
+// helper: small hex preview for logs
+function hexPreview(u8, n = 8) {
+  if (!u8) return '';
+  return Array.from(u8.slice(0, n)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 function seedWordsToString(words) {
