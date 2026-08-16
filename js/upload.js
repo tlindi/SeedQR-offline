@@ -12,13 +12,7 @@ document.getElementById('qrUpload').addEventListener('change', async (event) => 
   if (errorBox) errorBox.textContent = "";
 
   try {
-    // decodeQRFromFile should return { text, payload } or { text, bytes }
-    const qrResult = await decodeQRFromFile(file);
-    // Accept either `payload` (canonical) or `bytes` (legacy)
-    const input = qrResult && (qrResult.payload || qrResult.bytes);
-    if (!input || !(input instanceof Uint8Array)) {
-      throw new Error("QR decode failed or returned no binary payload");
-    }
+    const seedWords = await decodeSeedWordsFromFile(file);
 
     // Prefer the generalized decoder API if available
     let decoded = null;

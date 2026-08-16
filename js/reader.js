@@ -22,14 +22,20 @@ window.getPayload = function ({ qr, result }) {
   }
 
   if (!raw) {
-    console.warn('getPayload: no qr.binaryData or result.rawBytes');
+    console.warn(
+      `getPayload: missing data (binaryData=${qr?.binaryData ? 'present' : 'absent'}, rawBytes=${result?.rawBytes ? 'present' : 'absent'}, text=${result?.text ? 'present' : 'absent'})`
+    );
     return null;
+  } else if (qr?.binaryData) {
+    console.log("getPayload: using qr.binaryData payload");
+  } else if (result?.rawBytes) {
+    console.log("getPayload: using result.rawBytes payload");
+  } else if (result?.text) {
+    console.log("getPayload: using legacy text payload");
   }
 
   console.log(
-    'getPayload: source=' + src +
-    ' rawLen=' + String(raw.length) +
-    ' rawPreview=' + hexPreview(raw, 12)
+    `getPayload: source=${src} rawLen=${raw.length} rawPreview=${hexPreview(raw, 12)}`
   );
 
   // If ZXing path, attempt to strip an odd number of hex chars (nibbles) from the start.
@@ -40,21 +46,20 @@ window.getPayload = function ({ qr, result }) {
       const nibbleStripped = window.stripNibblesAndSlice(raw, 3, 16); // strip 3 hex chars (12 bits)
       if (nibbleStripped && nibbleStripped.length === 16) {
         console.log(
-          'getPayload: used stripNibblesAndSlice(3) on ZXing raw — preview=' +
-          bytesToHex(nibbleStripped)
+          `getPayload: ZXing stripNibblesAndSlice(3) succeeded — payload=${bytesToHex(nibbleStripped)}`
         );
         return nibbleStripped;
       } else {
-        console.log('getPayload: stripNibblesAndSlice returned null/short; falling back to byte-slice heuristics');
+        console.log('getPayload: ZXing stripNibblesAndSlice returned null/short — fallback to byte-slice heuristics');
       }
     } catch (e) {
-      console.warn('getPayload: stripNibblesAndSlice threw: ' + String(e && e.message ? e.message : e));
+      console.warn(`getPayload: ZXing stripNibblesAndSlice threw error=${String(e?.message || e)}`);
     }
   }
 
   // canonical case: exactly 16 bytes
   if (raw.length === 16) {
-    console.log('getPayload: chosen slice=0..16 (exact 16 bytes) payload=' + bytesToHex(raw));
+    console.log(`getPayload: chosen slice=0..16 (exact 16 bytes) payload=${bytesToHex(raw)}`);
     return raw;
   }
 
@@ -62,13 +67,13 @@ window.getPayload = function ({ qr, result }) {
   if (raw.length >= 19) {
     const headerStripped = raw.slice(3, 3 + 16);
     const headFirst = raw.slice(0, 16);
-    console.log('getPayload: candidate headerStripped preview=' + hexPreview(headerStripped, 12));
-    console.log('getPayload: candidate headFirst preview=' + hexPreview(headFirst, 12));
+    console.log(`getPayload: candidate headerStripped preview=${hexPreview(headerStripped, 12)}`);
+    console.log(`getPayload: candidate headFirst preview=${hexPreview(headFirst, 12)}`);
 
     // 1) If the first three bytes match a common header pattern (example: 0x41,0x0d,0x59), use header-stripped.
     //    We do not hardcode any test payload; this is a generic header-detection heuristic.
     if (raw[0] === 0x41 && raw[1] === 0x0d && raw[2] === 0x59) {
-      console.log('getPayload: detected header bytes 41 0d 59 — chosen slice=3..19 (header-stripped) payload=' + bytesToHex(headerStripped));
+      console.log(`getPayload: detected header 41 0d 59 — chosen slice=3..19 payload=${bytesToHex(headerStripped)}`);
       return headerStripped;
     }
 
@@ -79,23 +84,23 @@ window.getPayload = function ({ qr, result }) {
     const headFirstZero = headFirstArr.every(b => b === 0);
     const headerStrippedZero = headerStrippedArr.every(b => b === 0);
     if (!headerStrippedZero && headFirstZero) {
-      console.log('getPayload: headerStripped non-zero and headFirst all-zero — chosen slice=3..19 payload=' + bytesToHex(headerStripped));
+      console.log(`getPayload: headerStripped non-zero & headFirst all-zero — chosen slice=3..19 payload=${bytesToHex(headerStripped)}`);
       return headerStripped;
     }
 
     // 3) Otherwise prefer head-first (legacy / PNG style)
-    console.log('getPayload: no clear header detected — chosen slice=0..16 (head-first) payload=' + bytesToHex(headFirst));
+    console.log(`getPayload: no clear header — chosen slice=0..16 (head-first) payload=${bytesToHex(headFirst)}`);
     return headFirst;
   }
 
   // if longer than 16 but less than 19, take first 16 (consistent with PNG path)
   if (raw.length > 16) {
     const slice = raw.slice(0, 16);
-    console.log('getPayload: chosen slice=0..16 (raw length >16 and <19) payload=' + bytesToHex(slice));
+    console.log(`getPayload: chosen slice=0..16 (raw length >16 and <19) payload=${bytesToHex(slice)}`);
     return slice;
   }
 
   // too short
-  console.warn('getPayload: raw payload shorter than 16 bytes, returning null rawLen=' + String(raw.length));
+  console.warn(`getPayload: raw payload shorter than 16 bytes — rawLen=${raw.length}, returning null`);
   return null;
 };
