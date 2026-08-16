@@ -66,6 +66,23 @@ jobs:
           echo "Bundle created (if success):"
           ls -la SeedQR.html || true
 
+      - name: Annotate bundle with short commit id
+        if: always()  # Run always so we can see failures in annotation without blocking
+        run: |
+          set -euo pipefail
+          cd repo
+          # Determine a short commit id (7 chars). Prefer git, fallback to GITHUB_SHA env if present
+          SHORT_SHA=$(git rev-parse --short=7 HEAD 2>/dev/null || echo "${GITHUB_SHA:0:7}")
+          echo "Short SHA: $SHORT_SHA"
+
+          # Insert short SHA after date token like (C)YYYYMMDD by appending _<short_sha>
+          # Only add if not already present (negative lookahead for underscore)
+          perl -0777 -pe "s/\(C\)\d{8}(?!_)/\$&_${SHORT_SHA}/g" -i SeedQR.html || true
+
+          echo "Annotated SeedQR.html with $SHORT_SHA"
+          # show sample line for verification
+          grep -n "tlindi & Copilot" SeedQR.html || true
+
       - name: Check bundle exists
         id: check_bundle
         run: |
