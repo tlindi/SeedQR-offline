@@ -102,12 +102,13 @@ jobs:
 
       - name: Commit and push if bundle changed
         run: |
-          git add SeedQR-legacy.html
+          run: |
+          git add SeedQR-legacy.html js-legacy libs-legacy
           if git diff --cached --quiet; then
-            echo "No changes to SeedQR-legacy.html"
+            echo "No changes to legacy build"
           else
             git commit -m "Add bundled SeedQR HTML (generated legacy)"
-            git pull origin ${{ github.ref_name }} --rebase
+            git pull origin ${{ github.ref_name }} --rebase || git rebase --abort
             git push origin ${{ github.ref_name }}
           fi
 
