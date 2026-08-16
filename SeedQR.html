@@ -195,7 +195,7 @@ button:disabled {
 
   <h2>Compact SeedQR-offline for BIP39 and electrum 12 word seeds</h2>
   <p>
-    v0.2.1 by tlindi & Copilot (C)20260816_e05aedd
+    v0.2.1 by tlindi & Copilot (C)20260816_bc00cb4
   </p>
   <h1>DEBUG HELP: Append to URL ?debug=bip39, ?debug=electrum or ?debug=electrum_2fa </h1>
   <p>
@@ -302,22 +302,216 @@ button:disabled {
 </div>
 
 <!-- scripts -->
+<!-- tlindi -->
+<!-- * add support for very old browsers *  -->
+<!-- inlined: js/legacysupport.js -->
+<script>
+/* js/legacysupport.js */
+// js/legacysupport.js
+// Legacy shims (ES5-safe). Load this BEFORE other scripts in index.html.
+
+// 0) Object.setPrototypeOf shim for old browsers (Chrome 49, Firefox 44–47)
+if (typeof Object.setPrototypeOf !== 'function') {
+  Object.setPrototypeOf = function(obj, proto) {
+    // vanhoissa selaimissa __proto__ on vielä tuettu
+    obj.__proto__ = proto;
+    return obj;
+  };
+}
+
+// 1) globalThis shim - complex orifinal
+// if (typeof globalThis === 'undefined') {
+//// In browsers, globalThis can be window
+//  try {
+//    if (typeof window !== 'undefined') {
+//      window.globalThis = window;
+//    } else if (typeof self !== 'undefined') {
+//      self.globalThis = self;
+//    } else {
+//      // best-effort fallback
+//      this.globalThis = this;
+//    }
+//  } catch (e) {
+//    try { this.globalThis = this; } catch (e2) { /* ignore */ }
+//  }
+//}
+// 1) globalThis shim - more simple new 
+if (typeof globalThis === 'undefined') {
+  window.globalThis = window;
+}
+
+
+// 2) NodeList.forEach
+if (typeof NodeList !== 'undefined' && !NodeList.prototype.forEach) {
+  NodeList.prototype.forEach = function (callback, thisArg) {
+    if (this == null) { throw new TypeError('NodeList.prototype.forEach called on null or undefined'); }
+    var T = thisArg || window;
+    for (var i = 0; i < this.length; i++) {
+      callback.call(T, this[i], i, this);
+    }
+  };
+}
+
+// 2b) HTMLCollection.forEach
+if (typeof HTMLCollection !== 'undefined' && !HTMLCollection.prototype.forEach) {
+  HTMLCollection.prototype.forEach = function (callback, thisArg) {
+    if (this == null) { throw new TypeError('HTMLCollection.prototype.forEach called on null or undefined'); }
+    var T = thisArg || window;
+    for (var i = 0; i < this.length; i++) {
+      callback.call(T, this[i], i, this);
+    }
+  };
+}
+
+// 3) Array.from (minimal for array-like objects)
+if (!Array.from) {
+  Array.from = (function () {
+    var toStr = Object.prototype.toString;
+    var isCallable = function (fn) { return typeof fn === 'function' || toStr.call(fn) === '[object Function]'; };
+    var toInteger = function (value) {
+      var number = Number(value);
+      if (isNaN(number)) { return 0; }
+      if (number === 0 || !isFinite(number)) { return number; }
+      return (number > 0 ? 1 : -1) * Math.floor(Math.abs(number));
+    };
+    var maxSafeInteger = Math.pow(2, 53) - 1;
+    var toLength = function (value) {
+      var len = toInteger(value);
+      return Math.min(Math.max(len, 0), maxSafeInteger);
+    };
+
+    return function from(arrayLike /*, mapFn, thisArg */) {
+      var C = this;
+      if (arrayLike == null) { throw new TypeError('Array.from requires an array-like object - not null or undefined'); }
+      var items = Object(arrayLike);
+      var mapFn = arguments.length > 1 ? arguments[1] : void undefined;
+      var T;
+      if (typeof mapFn !== 'undefined') {
+        if (!isCallable(mapFn)) { throw new TypeError('Array.from: when provided, the second argument must be a function'); }
+        if (arguments.length > 2) { T = arguments[2]; }
+      }
+      var len = toLength(items.length);
+      var A = isCallable(C) ? Object(new C(len)) : new Array(len);
+      var k = 0;
+      var kValue;
+      while (k < len) {
+        kValue = items[k];
+        if (mapFn) {
+          A[k] = typeof T === 'undefined' ? mapFn(kValue, k) : mapFn.call(T, kValue, k);
+        } else {
+          A[k] = kValue;
+        }
+        k += 1;
+      }
+      A.length = len;
+      return A;
+    };
+  }());
+}
+
+// 4) CustomEvent polyfill
+(function () {
+  if (typeof window === 'undefined') return;
+  if (typeof window.CustomEvent === 'function') return;
+  function CustomEventPoly(typeArg, params) {
+    params = params || { bubbles: false, cancelable: false, detail: null };
+    var evt;
+    try {
+      evt = document.createEvent('CustomEvent');
+      evt.initCustomEvent(typeArg, params.bubbles, params.cancelable, params.detail);
+    } catch (e) {
+      evt = document.createEventObject();
+      evt.type = typeArg;
+      evt.bubbles = !!params.bubbles;
+      evt.cancelable = !!params.cancelable;
+      evt.detail = params.detail;
+    }
+    return evt;
+  }
+  CustomEventPoly.prototype = (window.Event || Object).prototype;
+  window.CustomEvent = CustomEventPoly;
+}());
+
+// 5) Event constructor shim (IE)
+if (typeof window !== 'undefined' && typeof window.Event !== 'function') {
+  (function () {
+    function EventPoly(type, params) {
+      params = params || { bubbles: false, cancelable: false };
+      var e;
+      try {
+        e = document.createEvent('Event');
+        e.initEvent(type, params.bubbles, params.cancelable);
+      } catch (err) {
+        e = document.createEventObject();
+        e.type = type;
+      }
+      return e;
+    }
+    EventPoly.prototype = (window.Event || Object).prototype;
+    window.Event = EventPoly;
+  }());
+}
+
+// 6) Minimal TextEncoder / TextDecoder polyfill (basic UTF-8)
+(function () {
+  if (typeof window === 'undefined') return;
+  if (typeof window.TextEncoder === 'undefined') {
+    function TextEncoderPoly() {}
+    TextEncoderPoly.prototype.encode = function (str) {
+      if (str === undefined || str === null) str = '';
+      var encodedStr = encodeURIComponent(String(str)).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+        return String.fromCharCode('0x' + p1);
+      });
+      var u8 = new Uint8Array(encodedStr.length);
+      for (var i = 0; i < encodedStr.length; i++) u8[i] = encodedStr.charCodeAt(i);
+      return u8;
+    };
+    window.TextEncoder = TextEncoderPoly;
+  }
+  if (typeof window.TextDecoder === 'undefined') {
+    function TextDecoderPoly() {}
+    TextDecoderPoly.prototype.decode = function (u8) {
+      if (!u8) return '';
+      var s = '';
+      for (var i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
+      try { return decodeURIComponent(escape(s)); } catch (e) { return s; }
+    };
+    window.TextDecoder = TextDecoderPoly;
+  }
+}());
+
+// 7) getUserMedia fallback for legacy browsers
+(function() {
+  const nav = navigator;
+  if (!nav.mediaDevices) {
+    nav.mediaDevices = {};
+  }
+  if (!nav.mediaDevices.getUserMedia) {
+    nav.mediaDevices.getUserMedia = function(constraints) {
+      const legacy = nav.getUserMedia || nav.webkitGetUserMedia || nav.mozGetUserMedia;
+      if (!legacy) {
+        return Promise.reject(new Error("getUserMedia not supported in this browser"));
+      }
+      return new Promise((resolve, reject) => {
+        legacy.call(nav, constraints, resolve, reject);
+      });
+    };
+  }
+})();
+
+</script>
 
 <!-- set Card visibility helper-->
 <script>
   function setCardVisible(id, visible) {
     var name = id.endsWith('Card') ? id : id + 'Card';
-    const el = document.getElementById(name);
+    var el = document.getElementById(name);
     if (!el) return;
     el.style.display = visible ? 'block' : 'none';
   }
   function hideCard(id){ setCardVisible(id, false); }
   function showCard(id){ setCardVisible(id, true); }
 </script>
-
-<!-- tlindi -->
-<!-- * add support for very old browsers *  -->
-<!-- MISSING SCRIPT: js/legacysupport .js -->
 <!-- external -->
 <!-- inlined: libs/crypto-js.min.js -->
 <script>
@@ -11375,18 +11569,6 @@ window.getPayload = function ({ qr, result }) {
     return null;
   }
 
-  // helper: small hex preview for logs
-  function hexPreview(u8, n = 8) {
-    if (!u8) return '';
-    return Array.from(u8.slice(0, n)).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  // helper: full hex for 16-byte payloads
-  function bytesToHex(u8) {
-    if (!u8) return '';
-    return Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
   // extract raw bytes from jsQR or ZXing result
   let raw = null;
   let src = null;
@@ -12497,6 +12679,7 @@ function bytesToHex(bytes, sep = "") {
   return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join(sep);
 }
 
+// existing: converts even-length hex -> Uint8Array
 function hexToBytes(hex) {
   const clean = String(hex).replace(/\s+/g, "");
   if (clean.length % 2) throw new Error("hexToBytes: odd-length hex");
@@ -12504,17 +12687,6 @@ function hexToBytes(hex) {
   for (let i = 0; i < out.length; i++) {
     out[i] = parseInt(clean.substr(i * 2, 2), 16);
   }
-  return out;
-}
-
-// helpers.js
-
-// existing: converts even-length hex -> Uint8Array
-function hexToBytes(hex) {
-  const clean = String(hex).replace(/\s+/g, "");
-  if (clean.length % 2) throw new Error("hexToBytes: odd-length hex");
-  const out = new Uint8Array(clean.length / 2);
-  for (let i = 0; i < out.length; i++) out[i] = parseInt(clean.substr(i * 2, 2), 16);
   return out;
 }
 
@@ -12539,10 +12711,6 @@ function stripNibblesAndSlice(raw, nibbles, outLen = 16) {
   return out;
 }
 
-// Utility: bytes -> hex
-function bytesToHex(u8) {
-  return Array.from(u8).map(b => b.toString(16).padStart(2,'0')).join('');
-}
 function bytesToWordArray(byteArray) {
   // fixed initialization to avoid NaN from uninitialized slots
   const words = new Array(Math.ceil(byteArray.length / 4)).fill(0);
@@ -12550,6 +12718,12 @@ function bytesToWordArray(byteArray) {
     words[(i / 4) | 0] |= byteArray[i] << (24 - 8 * (i % 4));
   }
   return CryptoJS.lib.WordArray.create(words, byteArray.length);
+}
+
+// helper: small hex preview for logs
+function hexPreview(u8, n = 8) {
+  if (!u8) return '';
+  return Array.from(u8.slice(0, n)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 function seedWordsToString(words) {
@@ -13514,7 +13688,7 @@ window.decodeQRFromFile = window.decodeQRFromFile || decodeQRFromFile;
 
 // local UI and input related DEBUG functions, in addition to js/debug.js
 function applyDebugMode() {
-  const banner = document.getElementById('debugBanner');
+  var banner = document.getElementById('debugBanner');
   if (!banner) return;
 
   // banner text for debug variants
@@ -13531,24 +13705,24 @@ function applyDebugMode() {
 
   // auto-fill debug words if provided
   if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
-    const els = document.querySelectorAll('#words input');
-    els.forEach((inp, i) => { inp.value = window.DEBUG_WORDS[i] || ""; });
+    var els = document.querySelectorAll('#words input');
+    els.forEach(function(inp, i) { inp.value = window.DEBUG_WORDS[i] || ""; });
     if (typeof validateInputs === 'function') validateInputs();
     if (typeof updateResults === 'function') updateResults();
 
     showCard('results');
 
     // enable/disable clear button based on content
-    const clearBtn = document.getElementById('clearBtn');
-    const anyFilled = Array.from(els).some(i => i.value.trim() !== "");
+    var clearBtn = document.getElementById('clearBtn');
+    var anyFilled = Array.from(els).some(i => i.value.trim() !== "");
     if (clearBtn) clearBtn.disabled = !anyFilled;
   }
 }
 
 // MAIN APPLICATION loop
 window.addEventListener('DOMContentLoaded', () => {
-  const banner = document.getElementById('debugBanner');
-  const payloadCard = document.getElementById('payloadCard');
+  var banner = document.getElementById('debugBanner');
+  var payloadCard = document.getElementById('payloadCard');
 
   if (DEBUG) {
     applyDebugMode();
@@ -13557,7 +13731,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // default: ensure clear is disabled until user types
-  const clearBtn = document.getElementById('clearBtn');
+  var clearBtn = document.getElementById('clearBtn');
   if (clearBtn) clearBtn.disabled = true;
 
   // Build the inputs
@@ -13568,10 +13742,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // WHEN DEBUG MODE Auto-fill debug words after inputs exist
   if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
-    const els = document.querySelectorAll('#words input');
-    els.forEach((inp, i) => {
-      inp.value = window.DEBUG_WORDS[i] || "";
-    });
+    var els = document.querySelectorAll('#words input');
+    els.forEach(function(inp, i) { inp.value = window.DEBUG_WORDS[i] || ""; });
 
     // Trigger normal pipeline
     validateInputs();
@@ -13580,9 +13752,9 @@ window.addEventListener('DOMContentLoaded', () => {
     showCard('results')
     
     // Set Clear button enabled/disabled based on whether any seed word is filled
-    const clearBtn = document.getElementById('clearBtn');
-    const inputs = document.querySelectorAll('#words input');
-    const anyFilled = Array.from(inputs).some(i => i.value.trim() !== "");
+    var clearBtn = document.getElementById('clearBtn');
+    var inputs = document.querySelectorAll('#words input');
+    var anyFilled = Array.from(inputs).some(i => i.value.trim() !== "");
     clearBtn.disabled = !anyFilled;
   }
 });

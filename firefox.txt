@@ -1,0 +1,5 @@
+mutating the [[Prototype]] of an object will cause your code to run very slowly; instead create the object with the correct initial [[Prototype]] value using Object.create SeedQR-legacy.html:13823:9
+getPayload: no qr.binaryData or result.rawBytes SeedQR-legacy.html:27270:5
+Camera start failed: MediaStreamError { name: "OverconstrainedError", message: "Constraints could be not satisfied.", constraint: "deviceId", stack: "" } SeedQR-legacy.html:27740:11
+
+
