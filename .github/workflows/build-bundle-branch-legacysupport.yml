@@ -71,8 +71,9 @@ jobs:
           }' > .babelrc
 
           # Transpile all <script> content to bundle
-          npx babel SeedQR-legacy.html --out-file SeedQR-legacy.html
-
+          npx babel js --out-dir js-legacy
+          npx babel libs/zxing-v0.19.1/index.min.js --out-file libs/zxing-v0.19.1/index.legacy.js
+          
       - name: Verify bundle file was created
         run: |
           if [ ! -f SeedQR-legacy.html ]; then
