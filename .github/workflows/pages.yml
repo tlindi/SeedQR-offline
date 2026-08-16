@@ -1,4 +1,4 @@
-name: Deploy Pages
+name: Deploy Pages (SeedQR-offline)
 
 on:
   push:
