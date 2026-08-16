@@ -97,7 +97,7 @@ def main(argv):
 
     # Add a metadata comment at top
     now = datetime.utcnow().isoformat() + "Z"
-    header = f"<!-- Bundled by scripts/build_bundle_html.py on {now} UTC -->\n"
+    header = f"<!-- Bundled by scripts/build_bundle_html-legacusupport.py -->\n"
     out_html = header + html
 
     out_path = Path(args.output)
