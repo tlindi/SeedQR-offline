@@ -42,9 +42,10 @@ jobs:
 
       - name: Validate & Build Bundle (strict ES5 mode)
         run: |
-          python3 scripts/build_bundle_html-legacysupport.py \
+          python3 scripts/build_bundle_html.py \
             --input index.html \
             --output SeedQR-legacy.html \
+            --strict
         continue-on-error: false
 
       - name: Verify bundle file was created
