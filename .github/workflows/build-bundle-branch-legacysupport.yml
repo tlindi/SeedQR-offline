@@ -1,4 +1,4 @@
-name: Build Bundle (ES5 Validation) FIX legacysupport branch
+name: Build Bundle (Legacy ES5 Validation) 
 
 on:
   workflow_dispatch:
