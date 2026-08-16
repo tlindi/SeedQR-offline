@@ -1,0 +1,9 @@
+Uncaught ReferenceError: globalThis is not defined
+SeedQR.html:11641 Uncaught SyntaxError: Unexpected token (
+SeedQR.html:11809 Uncaught SyntaxError: Unexpected token function
+SeedQR.html:12285 Uncaught SyntaxError: Unexpected token function
+SeedQR.html:12856 Uncaught SyntaxError: Unexpected token function
+SeedQR.html:12889 Uncaught SyntaxError: Unexpected token function
+SeedQR.html:12990 Uncaught SyntaxError: Unexpected token function
+SeedQR.html:13179 Uncaught SyntaxError: Unexpected token function
+SeedQR.html:13442 Uncaught SyntaxError: Unexpected token function

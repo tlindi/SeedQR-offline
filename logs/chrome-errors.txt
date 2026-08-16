@@ -1,9 +1,0 @@
-Uncaught ReferenceError: globalThis is not defined
-Uncaught SyntaxError: Unexpected token (
-Uncaught SyntaxError: Unexpected token function
-Uncaught SyntaxError: Unexpected token function
-Uncaught SyntaxError: Unexpected token function
-Uncaught SyntaxError: Unexpected token function
-Uncaught SyntaxError: Unexpected token function
-Uncaught SyntaxError: Unexpected token function
-Uncaught SyntaxError: Unexpected token function
