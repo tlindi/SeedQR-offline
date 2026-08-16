@@ -40,14 +40,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-      - name: Validate & Build Bundle (strict ES5 mode)
-        run: |
-          python3 scripts/build_bundle_html.py \
-            --input index.html \
-            --output SeedQR-legacy.html \
-            --strict
-        continue-on-error: false
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -56,9 +48,8 @@ jobs:
       - name: Install Babel
         run: npm install --save-dev @babel/core @babel/cli @babel/preset-env
 
-      - name: Transpile SeedQR-legacy.html bundle to ES5
+      - name: Create Babel config
         run: |
-          # Create Babel configuration
           echo '{
             "presets": [
               ["@babel/preset-env", {
@@ -70,10 +61,19 @@ jobs:
             ]
           }' > .babelrc
 
-          # Transpile all <script> content to bundle
+      - name: Transpile JS sources to ES5
+        run: |
           npx babel js --out-dir js-legacy
-          npx babel libs/zxing-v0.19.1/index.min.js --out-file libs/zxing-v0.19.1/index.legacy.js
-          
+          npx babel libs --out-dir libs-legacy
+
+      - name: Validate & Build Bundle (strict ES5 mode)
+        run: |
+          python3 scripts/build_bundle_html-legacysupport.py \
+            --input index.html \
+            --output SeedQR-legacy.html \
+            --strict
+        continue-on-error: false
+
       - name: Verify bundle file was created
         run: |
           if [ ! -f SeedQR-legacy.html ]; then
@@ -130,7 +130,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `✓ **Build successful (legacysupport branch)!**\n\n📦 Bundle: \`SeedQR-legacy.html\` (${bundleSize.toFixed(2)} KB)\n\n✓ ES5 validation passed\n\nRun locally: \`python3 scripts/build_bundle_html-legacysupport.py --strict\``
-            });
+            })
 
       - name: Create Release (on tag push)
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
