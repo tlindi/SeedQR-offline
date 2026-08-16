@@ -91,6 +91,7 @@ async function decodeSeedWordsFromData(input) {
 // File wrapper that uses decodeQRFromFile and the generalized decoder
 async function decodeSeedWordsFromFile(file) {
   const { text, payload, bytes } = await decodeQRFromFile(file).catch(e => { throw e; });
+  console.log("!!!INPUT!!!");
 
   let input = payload || bytes || text;
   if (!input) throw new Error('QR decode failed or returned no payload (payload, bytes, or text)');
