@@ -8,6 +8,7 @@ function bytesToHex(bytes, sep = "") {
   return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join(sep);
 }
 
+// existing: converts even-length hex -> Uint8Array
 function hexToBytes(hex) {
   const clean = String(hex).replace(/\s+/g, "");
   if (clean.length % 2) throw new Error("hexToBytes: odd-length hex");
@@ -15,17 +16,6 @@ function hexToBytes(hex) {
   for (let i = 0; i < out.length; i++) {
     out[i] = parseInt(clean.substr(i * 2, 2), 16);
   }
-  return out;
-}
-
-// helpers.js
-
-// existing: converts even-length hex -> Uint8Array
-function hexToBytes(hex) {
-  const clean = String(hex).replace(/\s+/g, "");
-  if (clean.length % 2) throw new Error("hexToBytes: odd-length hex");
-  const out = new Uint8Array(clean.length / 2);
-  for (let i = 0; i < out.length; i++) out[i] = parseInt(clean.substr(i * 2, 2), 16);
   return out;
 }
 
