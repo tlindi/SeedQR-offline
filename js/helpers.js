@@ -40,10 +40,12 @@ function stripNibblesAndSlice(raw, nibbles, outLen = 16) {
   return out;
 }
 
-// Utility: bytes -> hex
-function bytesToHex(u8) {
-  return Array.from(u8).map(b => b.toString(16).padStart(2,'0')).join('');
-}
+// helper: bytes -> hex with full hex for 16-byte payloads
+  function bytesToHex(u8) {
+    if (!u8) return '';
+    return Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
 function bytesToWordArray(byteArray) {
   // fixed initialization to avoid NaN from uninitialized slots
   const words = new Array(Math.ceil(byteArray.length / 4)).fill(0);

@@ -16,12 +16,6 @@ window.getPayload = function ({ qr, result }) {
     return Array.from(u8.slice(0, n)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  // helper: full hex for 16-byte payloads
-  function bytesToHex(u8) {
-    if (!u8) return '';
-    return Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
   // extract raw bytes from jsQR or ZXing result
   let raw = null;
   let src = null;
