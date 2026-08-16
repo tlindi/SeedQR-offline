@@ -25,4 +25,4 @@ jobs:
         with:
           path: ./build
       - name: Deploy to GitHub Pages (SeedQR-offline)
-        uses: uses: actions/deploy-pages@v4.0.5
+        uses: actions/deploy-pages@v4.0.5
