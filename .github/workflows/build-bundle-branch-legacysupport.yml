@@ -1,0 +1,97 @@
+name: Build Bundle (ES5 Validation)
+
+on:
+  push:
+    branches:
+      - legacysupport
+    paths:
+      - 'index.html'
+      - 'css/**'
+      - 'js/**'
+      - 'libs/**'
+      - 'scripts/build_bundle_html.py'
+      - '.github/workflows/build-bundle-branch-legacysuport.yml'
+  pull_request:
+    branches:
+      - FIX-legacysupport
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build & Validate Bundle
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Validate & Build Bundle (strict ES5 mode)
+        run: |
+          python3 scripts/build_bundle_html.py \
+            --input index.html \
+            --output SeedQR.html \
+            --strict
+        continue-on-error: false
+
+      - name: Verify bundle file was created
+        run: |
+          if [ ! -f SeedQR.html ]; then
+            echo "ERROR: SeedQR.html not generated"
+            exit 1
+          fi
+          ls -lh SeedQR.html
+          echo "✓ Bundle created successfully"
+
+      - name: Check for ES6 syntax patterns
+        run: |
+          echo "Scanning for ES6 patterns in bundled file..."
+          patterns=("const " "let " "class " " => " "\`" "async " "await ")
+          found=0
+          for pattern in "${patterns[@]}"; do
+            if grep -q "$pattern" SeedQR.html; then
+              echo "⚠️  Found pattern: $pattern"
+              found=$((found + 1))
+            fi
+          done
+          if [ $found -gt 0 ]; then
+            echo "⚠️  Warning: $found ES6 patterns detected in bundle"
+          else
+            echo "✓ No common ES6 patterns detected"
+          fi
+
+      - name: Upload bundle as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: SeedQR-bundle
+          path: SeedQR.html
+          retention-days: 30
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const bundleSize = fs.statSync('SeedQR.html').size / 1024;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✓ **Build successful!**\n\n📦 Bundle: \`SeedQR.html\` (${bundleSize.toFixed(2)} KB)\n\nRun \`python3 scripts/build_bundle_html.py --strict\` locally to validate ES5 compliance.`
+            });
+
+      - name: Create Release (on push to legacysupport, if tagged)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: SeedQR.html
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

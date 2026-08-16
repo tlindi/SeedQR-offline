@@ -23,7 +23,11 @@ on:
   push:
     tags:
       - 'v*'
-
+  pull_request:
+    branches:
+      - main 
+      - FIX-legacysupport
+      
 permissions:
   contents: write
 
