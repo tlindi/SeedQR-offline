@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - FIX-legacysupport
+      - '**'
     paths:
       - 'index.html'
       - 'css/**'
@@ -43,7 +43,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '18'
+          node-version: '24'
 
       - name: Install Babel
         run: npm install --save-dev @babel/core @babel/cli @babel/preset-env
@@ -67,6 +67,9 @@ jobs:
           npx babel js --out-dir js-legacy
           npx babel libs --out-dir libs-legacy
 
+      - name: Install Node dependencies
+        run: npm install
+          
       - name: Validate & Build Bundle (strict ES5 mode)
         run: |
           python3 scripts/build_bundle_html-legacysupport.py \
