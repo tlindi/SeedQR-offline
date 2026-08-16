@@ -26,7 +26,7 @@ concurrency:
 jobs:
   deploy:
     environment:
-      name: github-pages-yml
+      name: Deploy-Pages-SeedQR-offline
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
