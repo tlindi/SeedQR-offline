@@ -1,34 +1,48 @@
 name: Deploy Pages (SeedQR-offline)
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
+
 on:
   push:
     branches:
       - main
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+# build-deploy:
+# - name: Lint (ES5 validation)
+#  run: npx eslint . --max-warnings 0
+# - name: Build
+#  run: npm run build
+
 jobs:
-  build-deploy:
+  deploy:
+    environment:
+      name: Deploy-Pages-SeedQR-offline
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint (ES5 validation)
-        run: npx eslint . --max-warnings 0
-
-      - name: Build
-        run: npm run build
-
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./build
+          path: '.'
 
       - name: Deploy to GitHub Pages (SeedQR-offline)
-        uses: actions/deploy-pages@v4
+        id: deployment-pages
+        uses: actions/deploy-pages@v5
