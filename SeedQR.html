@@ -1,4 +1,4 @@
-<!-- Bundled by scripts/build_bundle_html.py on 2026-08-16T01:58:57.649475Z UTC -->
+<!-- Bundled by scripts/build_bundle_html.py on 2026-08-16T02:10:10.120458Z UTC -->
 <!-- SeedQR.html -->
 <!DOCTYPE html>
 <html lang="en">
@@ -195,7 +195,7 @@ button:disabled {
 
   <h2>Compact SeedQR-offline for BIP39 and electrum 12 word seeds</h2>
   <p>
-    v0.2.1 by tlindi & Copilot (C)20260815_ffb7d7d
+    v0.2.1 by tlindi & Copilot (C)20260815_d02845b
   </p>
   <h1>DEBUG HELP: Append to URL ?debug=bip39, ?debug=electrum or ?debug=electrum_2fa </h1>
   <p>
@@ -11322,15 +11322,13 @@ var qrcodegen;
 
 <!-- tlindi -->
 <!-- * add support for very old browsers *  -->
-<!-- inlined: js/polyfill.js -->
+<!-- inlined: js/polyfills.js -->
 <script>
-/* js/polyfill.js */
+/* js/polyfills.js */
 // Minimal polyfills for older browsers (IE11+ compatible)
 // - NodeList.forEach
 // - Array.from (robust polyfill from MDN, supports array-like objects and optional mapFn)
 //
-// Include this file BEFORE your other scripts (e.g. put <script src="js/polyfills.js"></script>
-// at the top of index.html, before js/common.js and friends).
 
 (function () {
   // NodeList.forEach polyfill
