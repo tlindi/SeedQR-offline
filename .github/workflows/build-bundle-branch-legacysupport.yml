@@ -80,7 +80,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to SeedQR-legacy.html"
           else
-            git commit -m "Add bundled SeedQR HTML (genarated legacy)"
+            git commit -m "Add bundled SeedQR HTML (generated legacy)"
             git pull origin ${{ github.ref_name }} --rebase
             git push origin ${{ github.ref_name }}
           fi
