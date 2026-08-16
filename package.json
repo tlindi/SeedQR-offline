@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "lint:es5": "eslint . --max-warnings 0",
+    "build": "npm run lint:es5 && python scripts/build_bundle_html.py"
+  }
+}

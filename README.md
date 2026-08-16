@@ -81,6 +81,8 @@ js/status.js              — status UI / messages
 js/reader.js              — canonical payload normalizer from jsQR/ZXing results
 js/decoder.js             — central decoding orchestrator (tries Electrum then BIP39 + transforms)
 js/WORDLIST.js            — bundled English BIP39 wordlist (used at runtime)
+.eslintrc.json         — linter configuration to catch ES6 syntax in build
+package.json           — build time linter for check legacysupport issues 
 libs/                  — third-party libs (crypto-js, jsQR, qrcodegen, zxing)
 css/                   — styles (styles.css)
 dists/                 — distribution artifacts (build outputs / packaged files)

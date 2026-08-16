@@ -129,7 +129,7 @@
 <!-- set Card visibility helper-->
 <script>
   function setCardVisible(id, visible) {
-    const name = id.endsWith('Card') ? id : id + 'Card';
+    var name = id.endsWith('Card') ? id : id + 'Card';
     const el = document.getElementById(name);
     if (!el) return;
     el.style.display = visible ? 'block' : 'none';
