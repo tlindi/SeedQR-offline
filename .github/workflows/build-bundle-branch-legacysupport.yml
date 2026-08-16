@@ -56,7 +56,8 @@ jobs:
                 "targets": {
                   "chrome": "49",
                   "firefox": "44"
-                }
+                },
+                "modules": false
               }]
             ]
           }' > .babelrc

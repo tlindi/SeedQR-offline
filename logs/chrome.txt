@@ -1,24 +1,5 @@
-SeedQR.html:11323 Uncaught ReferenceError: globalThis is not defined
-(anonymous function) @ SeedQR.html:11323
-Object.setPrototypeOf.__proto__ @ SeedQR.html:11309
-(anonymous function) @ SeedQR.html:11309
+SeedQR-legacy.html:529 Uncaught TypeError: Cannot set property 'CryptoJS' of undefined
+(anonymous function) @ SeedQR-legacy.html:529
+(anonymous function) @ SeedQR-legacy.html:530
 
-SeedQR.html:11490 Uncaught SyntaxError: Unexpected token (
-
-SeedQR.html:11658 Uncaught SyntaxError: Unexpected token function
-
-SeedQR.html:12134 Uncaught SyntaxError: Unexpected token function
-
-SeedQR.html:12705 Uncaught SyntaxError: Unexpected token function
-
-SeedQR.html:12738 Uncaught SyntaxError: Unexpected token function
-
-SeedQR.html:12839 Uncaught SyntaxError: Unexpected token function
-
-SeedQR.html:13028 Uncaught SyntaxError: Unexpected token function
-
-SeedQR.html:13291 Uncaught SyntaxError: Unexpected token function
-
-SeedQR.html:12419 Uncaught TypeError: inputs.forEach is not a function
-attachValidation @ SeedQR.html:12419
-window.addEventListener @ SeedQR.html:13565
+SeedQR-legacy.html?debug=bip39:27737 Camera start failed: TypeError: navigator.mediaDevices.getUserMedia is not a function(…)(anonymous function) @ SeedQR-legacy.html?debug=bip39:27737(anonymous function) @ SeedQR-legacy.html?debug=bip39:29714(anonymous function) @ SeedQR-legacy.html?debug=bip39:29715asyncGeneratorStep @ SeedQR-legacy.html?debug=bip39:29716_next @ SeedQR-legacy.html?debug=bip39:29717(anonymous function) @ SeedQR-legacy.html?debug=bip39:29717(anonymous function) @ SeedQR-legacy.html?debug=bip39:29717_startCamera @ SeedQR-legacy.html?debug=bip39:27743startCamera @ SeedQR-legacy.html?debug=bip39:27578(anonymous function) @ SeedQR-legacy.html?debug=bip39:27919(anonymous function) @ SeedQR-legacy.html?debug=bip39:29714(anonymous function) @ SeedQR-legacy.html?debug=bip39:29715asyncGeneratorStep @ SeedQR-legacy.html?debug=bip39:29716_next @ SeedQR-legacy.html?debug=bip39:29717(anonymous function) @ SeedQR-legacy.html?debug=bip39:29717(anonymous function) @ SeedQR-legacy.html?debug=bip39:29717_initCameraOnLoad @ SeedQR-legacy.html?debug=bip39:27925initCameraOnLoad @ SeedQR-legacy.html?debug=bip39:27907(anonymous function) @ SeedQR-legacy.html?debug=bip39:27891(anonymous function) @ SeedQR-legacy.html?debug=bip39:29714(anonymous function) @ SeedQR-legacy.html?debug=bip39:29715asyncGeneratorStep @ SeedQR-legacy.html?debug=bip39:29716_next @ SeedQR-legacy.html?debug=bip39:27546(anonymous function) @ SeedQR-legacy.html?debug=bip39:27546(anonymous function) @ SeedQR-legacy.html?debug=bip39:27546

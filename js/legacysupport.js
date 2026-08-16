@@ -170,3 +170,22 @@ if (typeof window !== 'undefined' && typeof window.Event !== 'function') {
     window.TextDecoder = TextDecoderPoly;
   }
 }());
+
+// 7) getUserMedia fallback for legacy browsers
+(function() {
+  const nav = navigator;
+  if (!nav.mediaDevices) {
+    nav.mediaDevices = {};
+  }
+  if (!nav.mediaDevices.getUserMedia) {
+    nav.mediaDevices.getUserMedia = function(constraints) {
+      const legacy = nav.getUserMedia || nav.webkitGetUserMedia || nav.mozGetUserMedia;
+      if (!legacy) {
+        return Promise.reject(new Error("getUserMedia not supported in this browser"));
+      }
+      return new Promise((resolve, reject) => {
+        legacy.call(nav, constraints, resolve, reject);
+      });
+    };
+  }
+})();
