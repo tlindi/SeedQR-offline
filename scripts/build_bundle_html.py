@@ -205,7 +205,6 @@ def main(argv):
             print("⚠️  Warning: ES6 syntax detected. Use --strict to fail on this.", file=sys.stderr)
 
     # Add a metadata comment at top
-    now = datetime.utcnow().isoformat() + "Z"
     header = f"<!-- Bundled by scripts/build_bundle_html.py -->\n"
     out_html = header + html
 

@@ -26,7 +26,6 @@ on:
   pull_request:
     branches:
       - main 
-      - FIX-legacysupport
       
 permissions:
   contents: write

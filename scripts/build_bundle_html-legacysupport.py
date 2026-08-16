@@ -76,7 +76,7 @@ def main(argv):
     parser.add_argument(
         "--output",
         "-o",
-        default="SeedQR.html",
+        default="SeedQR-legacy.html",
         help="output bundled HTML (default: SeedQR.html)",
     )
     args = parser.parse_args(argv)
@@ -96,7 +96,6 @@ def main(argv):
     html = inline_scripts(html, base_dir)
 
     # Add a metadata comment at top
-    now = datetime.utcnow().isoformat() + "Z"
     header = f"<!-- Bundled by scripts/build_bundle_html-legacysupport.py -->\n"
     out_html = header + html
 

@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - legacysupport
       - FIX-legacysupport
     paths:
       - 'index.html'
@@ -50,11 +49,11 @@ jobs:
 
       - name: Verify bundle file was created
         run: |
-          if [ ! -f SeedQR.html ]; then
-            echo "ERROR: SeedQR.html not generated"
+          if [ ! -f SeedQR-legacy.html ]; then
+            echo "ERROR: SeedQR-legacy.html not generated"
             exit 1
           fi
-          ls -lh SeedQR.html
+          ls -lh SeedQR-legacy.html
           echo "✓ Bundle created successfully"
 
       - name: Check for ES6 syntax patterns
@@ -63,7 +62,7 @@ jobs:
           patterns=("const " "let " "class " " => " "\`" "async " "await ")
           found=0
           for pattern in "${patterns[@]}"; do
-            if grep -q "$pattern" SeedQR.html; then
+            if grep -q "$pattern" SeedQR-legacy.html; then
               echo "⚠️  Found pattern: $pattern"
               found=$((found + 1))
             fi
@@ -76,11 +75,11 @@ jobs:
 
       - name: Commit and push if bundle changed
         run: |
-          git add SeedQR.html
+          git add SeedQR-legacy.html
           if git diff --cached --quiet; then
-            echo "No changes to SeedQR.html"
+            echo "No changes to SeedQR-legacy.html"
           else
-            git commit -m "Add bundled SeedQR HTML (generated)"
+            git commit -m "Add bundled SeedQR HTML (genarated legacy)"
             git pull origin ${{ github.ref_name }} --rebase
             git push origin ${{ github.ref_name }}
           fi
