@@ -1,0 +1,11 @@
+# 12-word seed:
+approve fruit lens brass ring actual stool coin doll boss strong rate
+
+# Standard SeedQR digit stream:
+008607501025021714880023171503630517020917211425
+
+# CompactSeedQR bitstream:
+00001010110010111011101000000000100011011001101110100000000001011111010110011001011010110100000010100011010001110101110011011001
+
+# CompactSeedQR bytestream:
+b'\n\xcb\xba\x00\x8d\x9b\xa0\x05\xf5\x99k@\xa3G\\\xd9'

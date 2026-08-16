@@ -1,0 +1,11 @@
+# 12-word seed:
+vocal tray giggle tool duck letter category pattern train magnet excite swamp
+
+# Standard SeedQR digit stream:
+196218530783182905421028028912901848107106301753
+
+# CompactSeedQR bitstream:
+11110101010111001111010110000111111100100101010000111101000000010000100100001101000010101110011100010000101111010011101101101101
+
+# CompactSeedQR bytestream:
+b'\xf5\\\xf5\x87\xf2T=\x01\t\r\n\xe7\x10\xbd;m'

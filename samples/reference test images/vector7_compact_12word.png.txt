@@ -1,0 +1,11 @@
+# 12-word seed:
+dignity utility vacant shiver thought canoe feel multiply item youth actor coyote
+
+# Standard SeedQR digit stream:
+049619221923158517990268067811630950204300210397
+
+# CompactSeedQR bitstream:
+00111110000111100000101111000001111000110001111000001110010000110001010100110100100010110111011011011111111011000000101010011000
+
+# CompactSeedQR bytestream:
+b'>\x1e\x0b\xc1\xe3\x1e\x0eC\x154\x8bv\xdf\xec\n\x98'
