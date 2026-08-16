@@ -307,7 +307,7 @@ button:disabled {
 <script>
   function setCardVisible(id, visible) {
     var name = id.endsWith('Card') ? id : id + 'Card';
-    const el = document.getElementById(name);
+    var el = document.getElementById(name);
     if (!el) return;
     el.style.display = visible ? 'block' : 'none';
   }
@@ -13665,7 +13665,7 @@ window.decodeQRFromFile = window.decodeQRFromFile || decodeQRFromFile;
 
 // local UI and input related DEBUG functions, in addition to js/debug.js
 function applyDebugMode() {
-  const banner = document.getElementById('debugBanner');
+  var banner = document.getElementById('debugBanner');
   if (!banner) return;
 
   // banner text for debug variants
@@ -13682,24 +13682,24 @@ function applyDebugMode() {
 
   // auto-fill debug words if provided
   if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
-    const els = document.querySelectorAll('#words input');
-    els.forEach((inp, i) => { inp.value = window.DEBUG_WORDS[i] || ""; });
+    var els = document.querySelectorAll('#words input');
+    els.forEach(function(inp, i) { inp.value = window.DEBUG_WORDS[i] || ""; });
     if (typeof validateInputs === 'function') validateInputs();
     if (typeof updateResults === 'function') updateResults();
 
     showCard('results');
 
     // enable/disable clear button based on content
-    const clearBtn = document.getElementById('clearBtn');
-    const anyFilled = Array.from(els).some(i => i.value.trim() !== "");
+    var clearBtn = document.getElementById('clearBtn');
+    var anyFilled = Array.from(els).some(i => i.value.trim() !== "");
     if (clearBtn) clearBtn.disabled = !anyFilled;
   }
 }
 
 // MAIN APPLICATION loop
 window.addEventListener('DOMContentLoaded', () => {
-  const banner = document.getElementById('debugBanner');
-  const payloadCard = document.getElementById('payloadCard');
+  var banner = document.getElementById('debugBanner');
+  var payloadCard = document.getElementById('payloadCard');
 
   if (DEBUG) {
     applyDebugMode();
@@ -13708,7 +13708,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // default: ensure clear is disabled until user types
-  const clearBtn = document.getElementById('clearBtn');
+  var clearBtn = document.getElementById('clearBtn');
   if (clearBtn) clearBtn.disabled = true;
 
   // Build the inputs
@@ -13719,10 +13719,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // WHEN DEBUG MODE Auto-fill debug words after inputs exist
   if (window.DEBUG_WORDS && Array.isArray(window.DEBUG_WORDS)) {
-    const els = document.querySelectorAll('#words input');
-    els.forEach((inp, i) => {
-      inp.value = window.DEBUG_WORDS[i] || "";
-    });
+    var els = document.querySelectorAll('#words input');
+    els.forEach(function(inp, i) { inp.value = window.DEBUG_WORDS[i] || ""; });
 
     // Trigger normal pipeline
     validateInputs();
@@ -13731,9 +13729,9 @@ window.addEventListener('DOMContentLoaded', () => {
     showCard('results')
     
     // Set Clear button enabled/disabled based on whether any seed word is filled
-    const clearBtn = document.getElementById('clearBtn');
-    const inputs = document.querySelectorAll('#words input');
-    const anyFilled = Array.from(inputs).some(i => i.value.trim() !== "");
+    var clearBtn = document.getElementById('clearBtn');
+    var inputs = document.querySelectorAll('#words input');
+    var anyFilled = Array.from(inputs).some(i => i.value.trim() !== "");
     clearBtn.disabled = !anyFilled;
   }
 });
