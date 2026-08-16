@@ -1,5 +1,9 @@
 name: Deploy Pages (SeedQR-offline)
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
+
 on:
   push:
     branches:
@@ -33,7 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
