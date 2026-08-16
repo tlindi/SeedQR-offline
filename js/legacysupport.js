@@ -1,27 +1,52 @@
 // js/legacysupport.js
 // Legacy shims (ES5-safe). Load this BEFORE other scripts in index.html.
 
-// 1) globalThis shim
-if (typeof globalThis === 'undefined') {
-  // In browsers, globalThis can be window
-  try {
-    if (typeof window !== 'undefined') {
-      window.globalThis = window;
-    } else if (typeof self !== 'undefined') {
-      self.globalThis = self;
-    } else {
-      // best-effort fallback
-      this.globalThis = this;
-    }
-  } catch (e) {
-    try { this.globalThis = this; } catch (e2) { /* ignore */ }
-  }
+// 0) Object.setPrototypeOf shim for old browsers (Chrome 49, Firefox 44–47)
+if (typeof Object.setPrototypeOf !== 'function') {
+  Object.setPrototypeOf = function(obj, proto) {
+    // vanhoissa selaimissa __proto__ on vielä tuettu
+    obj.__proto__ = proto;
+    return obj;
+  };
 }
+
+// 1) globalThis shim - complex orifinal
+// if (typeof globalThis === 'undefined') {
+//// In browsers, globalThis can be window
+//  try {
+//    if (typeof window !== 'undefined') {
+//      window.globalThis = window;
+//    } else if (typeof self !== 'undefined') {
+//      self.globalThis = self;
+//    } else {
+//      // best-effort fallback
+//      this.globalThis = this;
+//    }
+//  } catch (e) {
+//    try { this.globalThis = this; } catch (e2) { /* ignore */ }
+//  }
+//}
+// 1) globalThis shim - more simple new 
+if (typeof globalThis === 'undefined') {
+  window.globalThis = window;
+}
+
 
 // 2) NodeList.forEach
 if (typeof NodeList !== 'undefined' && !NodeList.prototype.forEach) {
   NodeList.prototype.forEach = function (callback, thisArg) {
     if (this == null) { throw new TypeError('NodeList.prototype.forEach called on null or undefined'); }
+    var T = thisArg || window;
+    for (var i = 0; i < this.length; i++) {
+      callback.call(T, this[i], i, this);
+    }
+  };
+}
+
+// 2b) HTMLCollection.forEach
+if (typeof HTMLCollection !== 'undefined' && !HTMLCollection.prototype.forEach) {
+  HTMLCollection.prototype.forEach = function (callback, thisArg) {
+    if (this == null) { throw new TypeError('HTMLCollection.prototype.forEach called on null or undefined'); }
     var T = thisArg || window;
     for (var i = 0; i < this.length; i++) {
       callback.call(T, this[i], i, this);

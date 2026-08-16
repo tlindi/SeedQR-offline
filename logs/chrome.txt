@@ -19,5 +19,6 @@ SeedQR.html:13028 Uncaught SyntaxError: Unexpected token function
 
 SeedQR.html:13291 Uncaught SyntaxError: Unexpected token function
 
-SeedQR.html:12419 Uncaught TypeError: inputs.forEach is not a functionattachValidation @ SeedQR.html:12419
+SeedQR.html:12419 Uncaught TypeError: inputs.forEach is not a function
+attachValidation @ SeedQR.html:12419
 window.addEventListener @ SeedQR.html:13565
