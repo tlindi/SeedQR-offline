@@ -5,19 +5,14 @@ on:
     branches:
       - main
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-
-      - name: Install dependencies
-        run: npm install
 
       - name: Lint (ES5 validation)
         run: npx eslint . --max-warnings 0
@@ -31,4 +26,4 @@ jobs:
           path: ./build
 
       - name: Deploy to GitHub Pages (SeedQR-offline)
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
