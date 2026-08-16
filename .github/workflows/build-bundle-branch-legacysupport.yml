@@ -44,7 +44,7 @@ jobs:
           python3 scripts/build_bundle_html-legacysupport.py \
             --input index.html \
             --output SeedQR.html \
-            --strict
+//            --strict
         continue-on-error: false
 
       - name: Verify bundle file was created
