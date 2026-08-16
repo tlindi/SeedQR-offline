@@ -9,18 +9,26 @@ jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v7
-      - name: Install
-        run: npm install
-      - name: Install eslint 
-        run: npm install eslint
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ES5 validation)
+        run: npx eslint . --max-warnings 0
+
       - name: Build
         run: npm run build
+
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./build
+
       - name: Deploy to GitHub Pages (SeedQR-offline)
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
